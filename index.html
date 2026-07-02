@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Subtrak — Vos abonnements sous contrôle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{--ink:#0D0D0D;--ink-2:#3A3A3A;--ink-3:#888;--paper:#F5F4F0;--surface:#FFFFFF;--border:#E5E3DC;--accent:#2351F5;--acc2:#EEF1FE;--warn:#D4570A;--warnbg:#FFF2EB;--ok:#0A7A50;--okbg:#EDFAF3;--sb:#111110;--r:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);}
+[data-theme="dark"]{--ink:#F0EFEB;--ink-2:#C8C6BF;--ink-3:#888;--paper:#1A1A18;--surface:#222220;--border:#333330;--accent:#5B7FFF;--acc2:#1E2A4A;--warn:#F07030;--warnbg:#2A1800;--ok:#2ECC8A;--okbg:#0A2A1A;--sb:#0D0D0C;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;overflow-x:hidden;transition:background .3s,color .3s}
+.pg{display:none;min-height:100vh;animation:fi .18s ease}.pg.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.lnav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(245,244,240,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:background .3s}
+[data-theme="dark"] .lnav{background:rgba(26,26,24,.94)}
+.logo{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.5px;cursor:pointer}.logo span{color:var(--accent)}
+.lnav-r{display:flex;gap:8px;align-items:center}
+.lnav-link{font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;padding:8px 10px;border-radius:8px;transition:color .15s,background .15s}
+.lnav-link:hover{color:var(--ink);background:var(--surface)}
+@media(max-width:600px){.lnav-link{display:none}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--ink-2);border:1.5px solid var(--border)}.btn-ghost:hover{background:var(--surface)}
+.btn-dark{background:var(--ink);color:#fff}.btn-dark:hover{background:#222;transform:translateY(-1px)}
+[data-theme="dark"] .btn-dark{background:var(--accent)}
+.btn-sm{padding:7px 14px;font-size:12px}.btn-lg{padding:13px 26px;font-size:15px;border-radius:10px}.btn-full{width:100%;justify-content:center}
+.btn-white{background:#fff;color:#0D0D0D}.btn-white:hover{opacity:.9}
+.theme-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}.theme-btn:hover{background:var(--surface)}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 20px 70px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(35,81,245,.07) 0%,transparent 70%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:24px;box-shadow:var(--sh)}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0}
+.hero-h1{font-size:clamp(30px,5vw,64px);font-weight:700;letter-spacing:-2px;line-height:1.05;color:var(--ink);max-width:740px;margin-bottom:20px}.hero-h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--ink-3);max-width:420px;margin:0 auto 32px;line-height:1.7}
+.hero-ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:44px}
+.stat-band{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--sh);max-width:560px;width:100%;margin:0 auto}
+.sbi{flex:1;padding:16px 18px;text-align:center;position:relative}.sbi+.sbi::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:1px;background:var(--border)}
+.sbi-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:var(--ink);letter-spacing:-1px}.sbi-lbl{font-size:11px;color:var(--ink-3);margin-top:2px}
+.lp-sec{padding:64px 20px;max-width:1040px;margin:0 auto}
+.sec-eye{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-3);font-weight:600;margin-bottom:10px}
+.sec-h2{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-1px;color:var(--ink);max-width:420px;margin-bottom:40px;line-height:1.2}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.feat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--sh);transition:transform .2s}.feat:hover{transform:translateY(-3px)}
+.feat-icon{width:40px;height:40px;border-radius:10px;background:var(--paper);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.feat-t{font-weight:700;font-size:14px;margin-bottom:5px;color:var(--ink)}.feat-b{font-size:13px;color:var(--ink-3);line-height:1.7}
+.pricing-sec{background:var(--sb);padding:64px 20px}
+.pricing-inner{max-width:800px;margin:0 auto}
+.pricing-hdr{text-align:center;margin-bottom:36px}
+.pricing-h2{font-size:clamp(20px,3vw,28px);font-weight:700;color:#EDECEA;letter-spacing:-1px;margin-bottom:8px}
+.pricing-sub{color:rgba(237,236,234,.4);font-size:14px}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.pricing-grid{grid-template-columns:1fr}}
+.pc{border-radius:14px;padding:26px}.pc-free{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}.pc-pro{background:#fff}
+.pc-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.pc-name{font-size:18px;font-weight:700;margin-bottom:8px}.pc-free .pc-name{color:#EDECEA}.pc-pro .pc-name{color:#0D0D0D}
+.pc-old{font-size:13px;color:#999;text-decoration:line-through;margin-bottom:2px}
+.pc-price{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:500;letter-spacing:-1px;margin-bottom:2px}.pc-free .pc-price{color:#EDECEA}.pc-pro .pc-price{color:#0D0D0D}
+.pc-period{font-size:12px;margin-bottom:18px;color:#777}.pc-free .pc-period{color:rgba(237,236,234,.4)}.pc-pro .pc-period{color:#777}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.pc-feats li{font-size:13px;display:flex;gap:8px}.pc-free .pc-feats li{color:rgba(237,236,234,.75)}.pc-pro .pc-feats li{color:#3A3A3A}
+.pc-pro .btn-dark{background:#0D0D0D;color:#fff}
+.pc-free .btn-full{background:rgba(255,255,255,.1);color:#EDECEA;border:none}.pc-free .btn-full:hover{background:rgba(255,255,255,.18)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:36px}
+.tc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--sh)}
+.tc-stars{color:#F59E0B;font-size:12px;margin-bottom:8px}.tc-text{font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:12px}
+.tc-author{display:flex;align-items:center;gap:8px}
+.tc-av{width:30px;height:30px;border-radius:50%;background:var(--acc2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+.tc-name{font-size:13px;font-weight:600;color:var(--ink)}.tc-role{font-size:11px;color:var(--ink-3)}
+.lp-ft{padding:28px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.ft-copy{font-size:12px;color:var(--ink-3)}.ft-links{display:flex;gap:14px}.ft-link{font-size:12px;color:var(--ink-3);cursor:pointer}.ft-link:hover{color:var(--ink)}
+.auth-wrap{min-height:100vh;display:flex;flex-direction:column}
+@media(min-width:680px){.auth-wrap{flex-direction:row}}
+.auth-left{background:var(--sb);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 28px;position:relative;overflow:hidden;min-height:200px}
+@media(min-width:680px){.auth-left{flex:1;min-height:auto}}
+.auth-left::before{content:'';position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(35,81,245,.1);top:-60px;right:-60px;pointer-events:none}
+.auth-brand{font-size:22px;font-weight:700;color:#EDECEA;letter-spacing:-.5px;margin-bottom:28px}.auth-brand span{color:#6C8EFF}
+.auth-qt{font-size:17px;font-weight:500;color:#EDECEA;line-height:1.5;margin-bottom:14px;letter-spacing:-.2px;max-width:300px}
+.auth-qs{font-size:12px;color:rgba(237,236,234,.35)}
+.auth-right{display:flex;align-items:center;justify-content:center;padding:36px 20px;background:var(--paper)}
+@media(min-width:680px){.auth-right{width:420px;flex-shrink:0}}
+.auth-form{width:100%;max-width:320px}
+.auth-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px;color:var(--ink)}
+.auth-sub{font-size:13px;color:var(--ink-3);margin-bottom:22px}.auth-sub a{color:var(--accent);cursor:pointer;font-weight:500}
+.fld{margin-bottom:13px}.fld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-2);margin-bottom:4px}
+.fld input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:var(--paper);outline:none;transition:border .15s}
+.fld input:focus{border-color:var(--accent);background:var(--surface)}
+.fld-err{font-size:11px;color:#E05555;margin-top:3px;display:none}.fld.err input{border-color:#E05555}.fld.err .fld-err{display:block}
+.fld-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-back{text-align:center;margin-top:14px}
+.app{display:flex;min-height:100vh}
+.mob-nav{display:flex;background:var(--sb);border-top:1px solid rgba(255,255,255,.07);position:fixed;bottom:0;left:0;right:0;z-index:90;padding:4px 0 calc(4px + env(safe-area-inset-bottom))}
+@media(min-width:720px){.mob-nav{display:none}}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 2px;color:rgba(237,236,234,.4);transition:color .15s;font-size:10px;font-weight:500;position:relative}
+.mob-nav-item.on{color:#6C8EFF}.mob-nav-icon{font-size:18px}
+.mob-badge{position:absolute;top:2px;right:calc(50% - 18px);background:var(--warn);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px}
+.mob-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:95;align-items:flex-end;backdrop-filter:blur(3px)}
+.mob-sheet-overlay.on{display:flex}
+.mob-sheet{background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px rgba(0,0,0,.2);animation:sheetUp .25s cubic-bezier(.32,.72,0,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mob-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:4px auto 12px}
+.mob-sheet-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);margin-bottom:8px;padding:0 4px}
+.mob-sheet-item{display:flex;align-items:center;gap:12px;padding:13px 4px;font-size:15px;font-weight:500;color:var(--ink);cursor:pointer;border-radius:8px;transition:background .12s}
+.mob-sheet-item:active{background:var(--paper)}
+.mob-sheet-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.mob-sheet-sep{height:1px;background:var(--border);margin:8px 0}
+.sb{width:218px;flex-shrink:0;background:var(--sb);display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+@media(min-width:720px){.sb{display:flex}}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-logo{font-size:18px;font-weight:700;color:#EDECEA;letter-spacing:-.5px}.sb-logo span{color:#6C8EFF}
+.sb-tag{font-size:10px;color:rgba(237,236,234,.28);margin-top:2px}
+.sb-nav{padding:12px 8px;flex:1;overflow-y:auto}
+.sb-grp{margin-bottom:18px}.sb-grp-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(237,236,234,.2);font-weight:600;padding:0 10px;margin-bottom:4px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;color:rgba(237,236,234,.45);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:1px;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,.06);color:rgba(237,236,234,.8)}.sb-item.on{background:rgba(108,142,255,.16);color:#6C8EFF}
+.sb-icon{width:15px;text-align:center;font-size:13px;flex-shrink:0}
+.sb-bdg{margin-left:auto;background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sb-ft{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:9px}
+.sb-av{width:30px;height:30px;border-radius:50%;background:rgba(108,142,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#6C8EFF;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:500;color:rgba(237,236,234,.75)}.sb-uplan{font-size:10px;color:rgba(237,236,234,.28)}
+.app-main{flex:1;padding:22px 16px 80px;max-width:100%}
+@media(min-width:720px){.app-main{margin-left:218px;padding:26px 30px 30px;max-width:1020px}}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px}
+.tb-eye{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--ink-3);margin-bottom:2px}
+.tb-title{font-size:clamp(17px,3vw,22px);font-weight:700;letter-spacing:-.5px;color:var(--ink)}
+.tb-r{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh)}
+.sc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-3);font-weight:600;margin-bottom:5px}
+.sc-val{font-family:'JetBrains Mono',monospace;font-size:clamp(18px,4vw,24px);font-weight:500;color:var(--ink);letter-spacing:-1px;line-height:1}
+.sc-val.warn{color:var(--warn)}.sc-val.ok{color:var(--ok)}.sc-note{font-size:11px;color:var(--ink-3);margin-top:3px}.sc-note.warn{color:var(--warn)}
+.abar{display:none;align-items:flex-start;gap:10px;background:var(--warnbg);border:1px solid #FBCAA7;border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px}
+[data-theme="dark"] .abar{border-color:#5A2800}.abar.on{display:flex}.abar-txt{color:var(--warn);line-height:1.5}
+.pro-nudge{display:flex;align-items:center;justify-content:space-between;background:var(--sb);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;gap:10px;position:relative;overflow:hidden}
+.pro-nudge::after{content:'✦';position:absolute;right:60px;top:50%;transform:translateY(-50%);font-size:42px;color:rgba(255,255,255,.04);pointer-events:none}
+.pn-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6C8EFF;font-weight:700;margin-bottom:1px}
+.pn-t{font-weight:700;color:#EDECEA;font-size:13px;margin-bottom:1px}.pn-s{font-size:11px;color:rgba(237,236,234,.38)}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:16px;display:flex;align-items:center;gap:16px}
+.score-circle{width:70px;height:70px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:4px solid}
+.score-num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;line-height:1}.score-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.score-good{border-color:var(--ok);color:var(--ok)}.score-med{border-color:#F59E0B;color:#F59E0B}.score-bad{border-color:var(--warn);color:var(--warn)}
+.score-info{flex:1}.score-title{font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink)}.score-desc{font-size:12px;color:var(--ink-3);line-height:1.6}
+.savings-card{background:var(--okbg);border:1px solid #A7DFC5;border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+[data-theme="dark"] .savings-card{border-color:#1A5A38}
+.sav-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ok);font-weight:600;margin-bottom:1px}
+.sav-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--ok)}.sav-sub{font-size:11px;color:var(--ok);opacity:.7;margin-top:1px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sec-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-2)}
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:420px}
+thead{background:var(--paper)}
+th{text-align:left;padding:9px 13px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-3);font-weight:600;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--ink)}
+td{padding:10px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;color:var(--ink)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,0,0,.02)}[data-theme="dark"] tr:hover td{background:rgba(255,255,255,.02)}
+.td-name{font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
+.sub-logo{width:22px;height:22px;border-radius:5px;object-fit:contain;background:var(--paper);border:1px solid var(--border);flex-shrink:0}
+.sub-logo-ph{width:22px;height:22px;border-radius:5px;background:var(--acc2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0}
+.cat-bdg{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;background:var(--acc2);color:var(--accent);font-weight:600}
+.price-m{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink)}.freq-t{color:var(--ink-3);font-size:11px}
+.st-bdg{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px}
+.s-ok{background:var(--okbg);color:var(--ok)}.s-warn{background:var(--warnbg);color:var(--warn)}
+.s-red{background:#FEE2E2;color:#B91C1C}[data-theme="dark"] .s-red{background:#3A1010;color:#F87171}
+.s-trial{background:#EDE9FE;color:#7C3AED}[data-theme="dark"] .s-trial{background:#2A1A4A;color:#A78BFA}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.row-act{background:none;border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:11px;font-weight:500;color:var(--ink-3);cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;margin-left:2px}
+.row-act:hover{border-color:var(--accent);color:var(--accent)}.row-del:hover{border-color:#E05555;color:#E05555}
+.tbl-empty{padding:36px;text-align:center;color:var(--ink-3)}.tbl-empty-icon{font-size:26px;margin-bottom:7px}
+.tbl-empty-t{font-size:14px;font-weight:600;color:var(--ink-2);margin-bottom:4px}.tbl-empty-s{font-size:12px}
+.filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--ink-3);font-family:'Inter',sans-serif;transition:all .15s}
+.fbtn:hover{border-color:var(--ink-3);color:var(--ink)}.fbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+[data-theme="dark"] .fbtn.on{background:var(--accent);border-color:var(--accent)}
+.al-list{display:flex;flex-direction:column;gap:9px}
+.al-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)}
+.al-item.urgent{border-left:3px solid var(--warn)}.al-item.aok{border-left:3px solid var(--ok)}
+.al-icon{font-size:17px;flex-shrink:0}.al-name{font-weight:700;color:var(--ink);font-size:13px}.al-meta{font-size:11px;color:var(--ink-3);margin-top:1px}
+.al-bdg-wrap{margin-left:auto;flex-shrink:0}
+.al-empty{text-align:center;padding:40px 16px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--r)}
+.spg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+@media(max-width:580px){.spg{grid-template-columns:1fr}}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}.cc.full{grid-column:1/-1}
+.cc-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-2);margin-bottom:14px}
+.bar-chart{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:9px}
+.bar-lbl{font-size:11px;color:var(--ink-2);width:76px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:7px;background:var(--paper);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .7s cubic-bezier(.4,0,.2,1)}.bar-fill.w{background:var(--warn)}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);width:44px;text-align:right;flex-shrink:0}
+.dl-wrap{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.dl-legend{display:flex;flex-direction:column;gap:8px}
+.dl-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2)}.dl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.insight{background:var(--acc2);border:1px solid #C7D3FD;border-radius:var(--r);padding:14px 18px;display:flex;gap:10px;align-items:flex-start}
+[data-theme="dark"] .insight{border-color:#1E2A4A}
+.ins-icon{font-size:18px;flex-shrink:0}.ins-t{font-weight:700;color:var(--accent);font-size:13px;margin-bottom:3px}.ins-b{font-size:13px;color:var(--ink-2);line-height:1.6}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
+.cal-day-name{font-size:10px;text-align:center;color:var(--ink-3);font-weight:700;padding:4px 0;text-transform:uppercase;letter-spacing:.5px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-day{min-height:62px;border-radius:8px;display:flex;flex-direction:column;align-items:stretch;padding:5px;font-size:11px;color:var(--ink-2);background:var(--paper);border:1px solid var(--border);transition:all .15s;position:relative}
+.cal-day.empty{background:transparent;border:none}
+.cal-day.today{border-color:var(--accent);border-width:2px;background:var(--acc2)}
+.cal-day.today .cal-day-num{color:var(--accent);font-weight:700}
+.cal-day.has-sub{cursor:pointer}
+.cal-day.has-sub:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--accent)}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:2px;align-self:flex-start}
+.cal-sub-pill{font-size:9px;font-weight:600;padding:1px 4px;border-radius:4px;background:var(--warnbg);color:var(--warn);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px}
+.cal-sub-pill.s-trial-p{background:#EDE9FE;color:#7C3AED}
+[data-theme="dark"] .cal-sub-pill{background:#2A1800}
+[data-theme="dark"] .cal-sub-pill.s-trial-p{background:#2A1A4A}
+.cal-sub-more{font-size:9px;color:var(--ink-3);margin-top:1px;font-weight:600}
+.cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-3)}
+.cal-leg-item{display:flex;align-items:center;gap:6px}
+.cal-leg-sw{width:12px;height:12px;border-radius:3px}
+.cal-summary{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.cal-sum-item{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh)}
+.cal-sum-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--ink);letter-spacing:-.5px}
+.cal-sum-lbl{font-size:11px;color:var(--ink-3);margin-top:1px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-2);transition:all .12s}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ai-wrap{display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:360px}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px 0;display:flex;flex-direction:column;gap:10px}
+.ai-msg{display:flex;gap:8px;max-width:100%}.ai-msg.user{flex-direction:row-reverse}
+.ai-bubble{padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.6;max-width:82%}
+.ai-msg.bot .ai-bubble{background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.ai-msg.user .ai-bubble{background:var(--accent);color:#fff}
+.ai-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.ai-av.bot{background:var(--acc2);color:var(--accent)}.ai-av.user{background:var(--accent);color:#fff;font-size:11px;font-weight:700}
+.ai-input-row{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--border)}
+.ai-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:var(--surface);outline:none;transition:border .15s}
+.ai-input:focus{border-color:var(--accent)}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);animation:bounce .9s infinite;display:inline-block}
+.ai-dot:nth-child(2){animation-delay:.15s}.ai-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.csv-drop{border:2px dashed var(--border);border-radius:var(--r);padding:36px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
+.csv-drop:hover,.csv-drop.drag{border-color:var(--accent);background:var(--acc2)}
+.csv-drop-icon{font-size:32px;margin-bottom:10px}.csv-drop-t{font-weight:700;color:var(--ink);margin-bottom:3px}.csv-drop-s{font-size:12px;color:var(--ink-3)}
+.csv-results{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.csv-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px}
+.csv-check{width:16px;height:16px;border-radius:4px;cursor:pointer;flex-shrink:0;accent-color:var(--accent)}
+.csv-rname{font-weight:600;font-size:13px;flex:1;color:var(--ink)}.csv-rprice{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-2)}
+.pro-feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:24px}
+@media(max-width:480px){.pro-feat-grid{grid-template-columns:1fr}}
+.pro-feat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;gap:10px;align-items:flex-start}
+.pro-feat-icon{font-size:17px;flex-shrink:0}.pro-feat-t{font-weight:700;font-size:13px;margin-bottom:2px;color:var(--ink)}.pro-feat-s{font-size:12px;color:var(--ink-3);line-height:1.5}
+.pro-price-card{background:var(--sb);border-radius:14px;padding:26px;text-align:center;max-width:340px;margin:0 auto}
+.pro-price-old{font-size:13px;color:rgba(237,236,234,.4);text-decoration:line-through;margin-bottom:2px}
+.pro-price-val{font-family:'JetBrains Mono',monospace;font-size:38px;font-weight:500;color:#EDECEA;letter-spacing:-2px}
+.pro-price-per{font-size:12px;color:rgba(237,236,234,.4);margin-bottom:20px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:14px}
+.overlay.on{display:flex}
+.modal{background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,.22);animation:popin .2s ease;max-height:92vh;overflow-y:auto}
+@keyframes popin{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.modal-t{font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:3px;color:var(--ink)}.modal-s{font-size:13px;color:var(--ink-3);margin-bottom:16px}
+.mfld{margin-bottom:11px}.mfld label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-2);margin-bottom:4px}
+.mfld input,.mfld select,.mfld textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:var(--paper);outline:none;transition:border .15s;-webkit-appearance:none}
+.mfld input:focus,.mfld select:focus,.mfld textarea:focus{border-color:var(--accent);background:var(--surface)}
+.mfld textarea{resize:vertical;min-height:60px}.mfld.has-err input,.mfld.has-err select{border-color:#E05555}
+.merr{font-size:11px;color:#E05555;margin-top:2px;display:none}.mfld.has-err .merr{display:block}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-ft{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.limit-banner{background:var(--acc2);border:1px solid #C7D3FD;border-radius:var(--r);padding:11px 14px;font-size:13px;color:var(--accent);display:flex;align-items:center;gap:8px;margin-top:12px}
+[data-theme="dark"] .limit-banner{border-color:#1E2A4A}.limit-banner a{text-decoration:underline;cursor:pointer;font-weight:600}
+.toast{position:fixed;bottom:68px;right:14px;background:var(--ink);color:#fff;padding:10px 15px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;display:flex;align-items:center;gap:7px;max-width:260px}
+@media(min-width:720px){.toast{bottom:22px;right:22px;max-width:300px}}.toast.on{opacity:1;transform:none}
+.lock-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:30px 22px;text-align:center;box-shadow:var(--sh)}
+.lock-badge{display:inline-flex;align-items:center;gap:6px;background:var(--acc2);color:var(--accent);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.lock-ic{font-size:34px;margin-bottom:8px}
+.lock-t{font-size:19px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.3px}
+.lock-s{font-size:13px;color:var(--ink-3);max-width:380px;margin:0 auto 16px;line-height:1.6}
+.lock-list{list-style:none;max-width:300px;margin:0 auto 20px;text-align:left;display:flex;flex-direction:column;gap:8px}
+.lock-list li{font-size:13px;color:var(--ink-2);display:flex;gap:8px}
+.adv-row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--border)}
+.adv-row:first-of-type{border-top:none;padding-top:2px}
+.adv-ic{font-size:20px;flex-shrink:0;line-height:1.3}
+.adv-t{font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px}
+.adv-b{font-size:13px;color:var(--ink-2);line-height:1.6}
+</style>
+</head>
+<body>
+<!-- LANDING -->
+<div class="pg on" id="pg-landing">
+  <nav class="lnav">
+    <div class="logo" onclick="nav('pg-landing')">Sub<span>trak</span></div>
+    <div class="lnav-r">
+      <span class="lnav-link" onclick="document.getElementById('feat-sec').scrollIntoView({behavior:'smooth'})">Fonctionnalités</span>
+      <span class="lnav-link" onclick="document.getElementById('pricing-sec').scrollIntoView({behavior:'smooth'})">Tarifs</span>
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" aria-label="Changer le thème">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav('pg-login')">Se connecter</button>
+      <button class="btn btn-dark btn-sm" onclick="nav('pg-register')">Commencer</button>
+    </div>
+  </nav>
+  <section class="hero">
+    <div class="eyebrow"><span class="edot"></span>Nouveau · Pour les particuliers français</div>
+    <h1 class="hero-h1">Vos abonnements vous coûtent plus cher <em>que vous ne le pensez</em></h1>
+    <p class="hero-sub">1 Français sur 3 paie des abonnements qu'il n'utilise plus. Subtrak vous montre où part votre argent.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-dark btn-lg" onclick="nav('pg-register')">Commencer gratuitement →</button>
+      <button class="btn btn-ghost btn-lg" onclick="nav('pg-dashboard')">Voir la démo live</button>
+    </div>
+    <div class="stat-band">
+      <div class="sbi"><div class="sbi-val">49 €</div><div class="sbi-lbl">dépensés/mois en moyenne</div></div>
+      <div class="sbi"><div class="sbi-val">9,9</div><div class="sbi-lbl">abonnements par Français</div></div>
+      <div class="sbi"><div class="sbi-val">1/3</div><div class="sbi-lbl">ne les utilise plus</div></div>
+    </div>
+  </section>
+  <section class="lp-sec" id="feat-sec">
+    <div class="sec-eye">Ce que fait Subtrak</div>
+    <h2 class="sec-h2">Tout ce dont vous avez besoin</h2>
+    <div class="feat-grid">
+      <div class="feat"><div class="feat-icon">📋</div><div class="feat-t">Ajout en 10 secondes</div><div class="feat-b">Nom, montant, fréquence, date — et même les périodes d'essai.</div></div>
+      <div class="feat"><div class="feat-icon">🔔</div><div class="feat-t">Alertes avant renouvellement</div><div class="feat-b">7 jours avant chaque prélèvement. Résiliez à temps.</div></div>
+      <div class="feat"><div class="feat-icon">🤖</div><div class="feat-t">Coach IA personnalisé</div><div class="feat-b">Posez vos questions en français. L'IA analyse vos abonnements et vous conseille.</div></div>
+      <div class="feat"><div class="feat-icon">📊</div><div class="feat-t">Score de santé financière</div><div class="feat-b">Une note sur 100 pour savoir si vos abonnements sont bien maîtrisés.</div></div>
+      <div class="feat"><div class="feat-icon">🏦</div><div class="feat-t">Import bancaire CSV</div><div class="feat-b">Importez votre relevé et Subtrak détecte automatiquement vos abonnements.</div></div>
+      <div class="feat"><div class="feat-icon">🔒</div><div class="feat-t">100 % RGPD</div><div class="feat-b">Données hébergées en Europe. Aucune revente.</div></div>
+    </div>
+  </section>
+  <section class="pricing-sec" id="pricing-sec">
+    <div class="pricing-inner">
+      <div class="pricing-hdr"><h2 class="pricing-h2">Simple et transparent</h2><p class="pricing-sub">Commencez gratuitement. Passez à Pro quand vous êtes prêt.</p></div>
+      <div class="pricing-grid">
+        <div class="pc pc-free">
+          <div class="pc-name">Gratuit</div><div class="pc-price">0 €</div><div class="pc-period">pour toujours</div>
+          <ul class="pc-feats"><li>✓ Jusqu'à 5 abonnements</li><li>✓ Alertes visuelles</li><li>✓ Tableau de bord</li><li>✓ Score de santé</li><li>✓ Analyse simple</li><li>✓ Import CSV bancaire</li></ul>
+          <button class="btn btn-full" onclick="nav('pg-register')">Commencer gratuitement</button>
+        </div>
+        <div class="pc pc-pro">
+          <div class="pc-badge">Recommandé</div><div class="pc-name">Pro</div>
+          <div class="pc-old">9,99 €/mois</div><div class="pc-price">7,99 €</div><div class="pc-period pro">par mois · résiliable à tout moment</div>
+          <ul class="pc-feats"><li>✓ Tout le plan Gratuit</li><li>✓ Abonnements illimités</li><li>✓ Coach IA personnalisé</li><li>✓ Connexion email (détection auto)</li><li>✓ Alertes email</li><li>✓ Export PDF mensuel</li><li>✓ Analyse avancée</li></ul>
+          <button class="btn btn-dark btn-full" onclick="nav('pg-register')">Créer un compte gratuit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="lp-sec">
+    <div class="sec-eye">Exemples d'usage</div>
+    <h2 class="sec-h2">Ce que Subtrak permet de découvrir</h2>
+    <div style="font-size:12px;color:var(--ink-3);margin:-32px 0 32px">Scénarios illustratifs — Subtrak est en phase de lancement.</div>
+    <div class="testi-grid">
+      <div class="tc"><div class="tc-stars">★★★★★</div><div class="tc-text">« J'ai découvert que je payais encore une salle de sport quittée il y a 8 mois. Signalé en 2 minutes. »</div><div class="tc-author"><div class="tc-av">ML</div><div><div class="tc-name">Marie L.</div><div class="tc-role">Consultante, Lyon</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><div class="tc-text">« Le coach IA est bluffant. Il m'a suggéré de changer d'offre Adobe. Économie : 564 €/an. »</div><div class="tc-author"><div class="tc-av">TM</div><div><div class="tc-name">Thomas M.</div><div class="tc-role">Développeur, Paris</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★☆</div><div class="tc-text">« L'import CSV de ma banque a marché du premier coup. Tous mes abonnements détectés auto. »</div><div class="tc-author"><div class="tc-av">SC</div><div><div class="tc-name">Sophie C.</div><div class="tc-role">Enseignante, Bordeaux</div></div></div></div>
+    </div>
+  </section>
+  <footer class="lp-ft">
+    <div class="logo">Sub<span>trak</span></div>
+    <div class="ft-copy">© 2026 Subtrak · Fait en France</div>
+    <div class="ft-links"><span class="ft-link" onclick="demoMsg()">CGU</span><span class="ft-link" onclick="demoMsg()">Confidentialité</span></div>
+  </footer>
+</div>
+<!-- LOGIN -->
+<div class="pg" id="pg-login">
+  <div class="auth-wrap">
+    <div class="auth-left"><div class="auth-brand">Sub<span>trak</span></div><div class="auth-qt">« Les Français dépensent en moyenne 588 € par an en abonnements inutiles. »</div><div class="auth-qs">Source : Ipsos / Spliiit, 2025</div></div>
+    <div class="auth-right">
+      <div class="auth-form">
+        <div class="auth-title">Bon retour 👋</div>
+        <div class="auth-sub">Pas de compte ? <a onclick="nav('pg-register')">Créer un compte</a></div>
+        <div class="fld" id="le-f"><label>Email</label><input type="email" id="le" placeholder="vous@exemple.fr"/><div class="fld-err">Email invalide.</div></div>
+        <div class="fld" id="lp-f"><label>Mot de passe</label><input type="password" id="lp" placeholder="••••••••"/><div class="fld-err">Requis.</div></div>
+        <button class="btn btn-dark btn-full" style="margin-top:6px" onclick="doLogin()">Se connecter →</button>
+        <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:500" onclick="demoMsg()">Mot de passe oublié ?</div>
+        <div class="auth-back"><button class="btn btn-ghost btn-sm" onclick="nav('pg-landing')">← Retour</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- REGISTER -->
+<div class="pg" id="pg-register">
+  <div class="auth-wrap">
+    <div class="auth-left"><div class="auth-brand">Sub<span>trak</span></div><div class="auth-qt">« Commencez en 30 secondes. Aucune carte requise. »</div><div class="auth-qs">Gratuit · 5 abonnements · Sans engagement</div></div>
+    <div class="auth-right">
+      <div class="auth-form">
+        <div class="auth-title">Créer un compte</div>
+        <div class="auth-sub">Déjà inscrit ? <a onclick="nav('pg-login')">Se connecter</a></div>
+        <div class="fld-row" style="margin-bottom:0"><div class="fld"><label>Prénom</label><input type="text" id="rp" placeholder="Marie"/></div><div class="fld"><label>Nom</label><input type="text" id="rn" placeholder="Dupont"/></div></div>
+        <div class="fld" id="re-f"><label>Email</label><input type="email" id="re" placeholder="vous@exemple.fr"/><div class="fld-err">Email invalide.</div></div>
+        <div class="fld" id="rpw-f"><label>Mot de passe</label><input type="password" id="rpw" placeholder="8 caractères minimum"/><div class="fld-err">8 caractères minimum.</div></div>
+        <button class="btn btn-dark btn-full" style="margin-top:6px" onclick="doRegister()">Créer mon compte gratuit →</button>
+        <div style="margin-top:10px;font-size:11px;color:var(--ink-3);text-align:center">En créant un compte vous acceptez nos <span style="text-decoration:underline;cursor:pointer" onclick="demoMsg()">CGU</span></div>
+        <div class="auth-back"><button class="btn btn-ghost btn-sm" onclick="nav('pg-landing')">← Retour</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- APP -->
+<div class="pg" id="pg-dashboard">
+<div class="app">
+  <aside class="sb">
+    <div class="sb-brand"><div class="sb-logo">Sub<span>trak</span></div><div class="sb-tag">Vos abonnements sous contrôle</div></div>
+    <nav class="sb-nav">
+      <div class="sb-grp">
+        <div class="sb-grp-lbl">Principal</div>
+        <div class="sb-item on" id="sbi-dash" onclick="appPage('dash',this)"><span class="sb-icon">◉</span>Tableau de bord</div>
+        <div class="sb-item" id="sbi-subs" onclick="appPage('subs',this)"><span class="sb-icon">▣</span>Mes abonnements</div>
+        <div class="sb-item" id="sbi-alerts" onclick="appPage('alerts',this)"><span class="sb-icon">🔔</span>Alertes <span class="sb-bdg" id="alert-bdg" style="display:none">0</span></div>
+        <div class="sb-item" id="sbi-stats" onclick="appPage('stats',this)"><span class="sb-icon">◈</span>Statistiques</div>
+        <div class="sb-item" id="sbi-cal" onclick="appPage('cal',this)"><span class="sb-icon">📅</span>Calendrier</div>
+        <div class="sb-item" id="sbi-ai" onclick="appPage('ai',this)"><span class="sb-icon">🤖</span>Coach IA</div>
+        <div class="sb-item" id="sbi-csv" onclick="appPage('csv',this)"><span class="sb-icon">📤</span>Import CSV</div>
+      </div>
+      <div class="sb-grp">
+        <div class="sb-grp-lbl">Compte</div>
+        <div class="sb-item" onclick="toggleTheme()"><span class="sb-icon" id="sb-ti">🌙</span>Thème</div>
+        <div class="sb-item" id="sbi-pro" onclick="appPage('pro',this)"><span class="sb-icon">✦</span>Passer à Pro</div>
+        <div class="sb-item" onclick="doLogout()"><span class="sb-icon">→</span>Déconnexion</div>
+      </div>
+    </nav>
+    <div class="sb-ft"><div class="sb-user"><div class="sb-av" id="sb-av">M</div><div><div class="sb-uname" id="sb-uname">Marie D.</div><div class="sb-uplan" id="sb-uplan-lbl">Plan Gratuit</div></div></div></div>
+  </aside>
+  <nav class="mob-nav">
+    <div class="mob-nav-item on" id="mni-dash" onclick="appPage('dash',null,'mni-dash')"><div class="mob-nav-icon">◉</div>Accueil</div>
+    <div class="mob-nav-item" id="mni-subs" onclick="appPage('subs',null,'mni-subs')"><div class="mob-nav-icon">▣</div>Abonnements</div>
+    <div class="mob-nav-item" id="mni-alerts" onclick="appPage('alerts',null,'mni-alerts')"><div class="mob-nav-icon">🔔</div>Alertes<span class="mob-badge" id="mob-bdg" style="display:none">0</span></div>
+    <div class="mob-nav-item" id="mni-ai" onclick="appPage('ai',null,'mni-ai')"><div class="mob-nav-icon">🤖</div>Coach IA</div>
+    <div class="mob-nav-item" id="mni-more" onclick="openMobileMore()"><div class="mob-nav-icon">☰</div>Plus</div>
+  </nav>
+  <!-- MENU MOBILE "PLUS" -->
+  <div class="mob-sheet-overlay" id="mob-sheet" onclick="if(event.target===this)closeMobileMore()">
+    <div class="mob-sheet">
+      <div class="mob-sheet-handle"></div>
+      <div class="mob-sheet-title">Menu</div>
+      <div class="mob-sheet-item" onclick="closeMobileMore();appPage('stats',document.getElementById('sbi-stats'))"><span class="mob-sheet-icon">◈</span>Statistiques</div>
+      <div class="mob-sheet-item" onclick="closeMobileMore();appPage('cal',document.getElementById('sbi-cal'))"><span class="mob-sheet-icon">📅</span>Calendrier</div>
+      <div class="mob-sheet-item" onclick="closeMobileMore();appPage('csv',document.getElementById('sbi-csv'))"><span class="mob-sheet-icon">📤</span>Import CSV</div>
+      <div class="mob-sheet-item" onclick="closeMobileMore();appPage('pro',document.getElementById('sbi-pro'))"><span class="mob-sheet-icon">✦</span>Passer à Pro</div>
+      <div class="mob-sheet-sep"></div>
+      <div class="mob-sheet-item" onclick="toggleTheme()"><span class="mob-sheet-icon" id="mob-sheet-theme">🌙</span>Changer le thème</div>
+      <div class="mob-sheet-item" onclick="closeMobileMore();doLogout()"><span class="mob-sheet-icon">→</span>Se déconnecter</div>
+    </div>
+  </div>
+  <main class="app-main">
+    <!-- DASH -->
+    <div id="view-dash">
+      <div class="topbar"><div><div class="tb-eye">Tableau de bord</div><h1 class="tb-title" id="dash-gr">Bonjour !</h1></div><div class="tb-r"><button class="theme-btn" onclick="toggleTheme()" id="app-tb" aria-label="Changer le thème">🌙</button><button class="btn btn-dark btn-sm" onclick="openAdd()" aria-label="Ajouter un abonnement">+ Ajouter</button></div></div>
+      <div class="score-card" id="score-card"></div>
+      <div class="stats"><div class="sc"><div class="sc-lbl">Mensuel</div><div class="sc-val" id="d-tot">0 €</div><div class="sc-note" id="d-ann">0 € /an</div></div><div class="sc"><div class="sc-lbl">Abonnements</div><div class="sc-val ok" id="d-cnt">0</div><div class="sc-note">actifs</div></div><div class="sc"><div class="sc-lbl">Urgents</div><div class="sc-val warn" id="d-ren">0</div><div class="sc-note warn">dans 7 jours</div></div></div>
+      <div class="savings-card" id="sav-card" style="display:none"><div><div class="sav-lbl">Économies potentielles</div><div class="sav-val" id="sav-val">0 €</div><div class="sav-sub">en résiliant les abonnements peu utilisés</div></div><button class="btn btn-sm" style="background:var(--ok);color:#fff;border:none" onclick="appPage('subs',document.getElementById('sbi-subs'))">Voir →</button></div>
+      <div class="abar" id="abar"><span style="font-size:15px;flex-shrink:0">⚠️</span><div class="abar-txt" id="abar-txt"></div></div>
+      <div class="pro-nudge"><div><div class="pn-lbl">Subtrak Pro</div><div class="pn-t">Coach IA · Analyse avancée · Alertes email</div><div class="pn-s">Ne ratez plus jamais un renouvellement</div></div><button class="btn btn-white btn-sm" onclick="appPage('pro',document.getElementById('sbi-pro'))">Voir Pro →</button></div>
+      <div class="sec-hdr"><div class="sec-ttl">Derniers abonnements</div><button class="btn btn-ghost btn-sm" onclick="appPage('subs',document.getElementById('sbi-subs'))">Voir tout →</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Service</th><th>Montant</th><th>Renouvellement</th><th>Statut</th></tr></thead><tbody id="dash-tbl"></tbody></table></div>
+    </div>
+    <!-- SUBS -->
+    <div id="view-subs" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Gestion</div><h1 class="tb-title">Mes abonnements</h1></div><div class="tb-r"><button class="btn btn-ghost btn-sm" onclick="appPage('csv',document.getElementById('sbi-csv'))">Import CSV</button><button class="btn btn-dark btn-sm" onclick="openAdd()" aria-label="Ajouter un abonnement">+ Ajouter</button></div></div>
+      <div class="filter-row" id="sub-filters"></div>
+      <div class="tbl-wrap"><table><thead><tr><th onclick="sortBy('name')">Service</th><th onclick="sortBy('price')">Montant</th><th>Fréquence</th><th onclick="sortBy('date')">Renouvellement</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="subs-tbl"></tbody></table></div>
+      <div id="limit-msg"></div>
+    </div>
+    <!-- ALERTS -->
+    <div id="view-alerts" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Notifications</div><h1 class="tb-title">Alertes</h1></div></div>
+      <div class="filter-row"><button class="fbtn on" onclick="fAlert('all',this)">Toutes</button><button class="fbtn" onclick="fAlert('urgent',this)">Urgentes (7j)</button><button class="fbtn" onclick="fAlert('month',this)">Ce mois</button><button class="fbtn" onclick="fAlert('trial',this)">Essais gratuits</button></div>
+      <div class="al-list" id="alerts-list"></div>
+    </div>
+    <!-- STATS -->
+    <div id="view-stats" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Analyse</div><h1 class="tb-title">Statistiques</h1></div></div>
+      <div class="stats"><div class="sc"><div class="sc-lbl">Mensuel</div><div class="sc-val" id="st-m">0 €</div></div><div class="sc"><div class="sc-lbl">Annuel</div><div class="sc-val warn" id="st-a">0 €</div></div><div class="sc"><div class="sc-lbl">Moy./abonnement</div><div class="sc-val" id="st-avg" style="font-size:17px;letter-spacing:0">0 €</div></div></div>
+      <div class="spg"><div class="cc"><div class="cc-t">Par catégorie</div><div class="bar-chart" id="cat-bars"></div></div><div class="cc"><div class="cc-t">Par fréquence</div><div class="dl-wrap" id="freq-donut"></div></div><div class="cc full" id="insight-card"></div></div>
+      <div id="stats-advanced" style="margin-top:14px"></div>
+    </div>
+    <!-- CALENDRIER -->
+    <div id="view-cal" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Planning</div><h1 class="tb-title">Calendrier des prélèvements</h1></div></div>
+      <div class="cal-summary" id="cal-summary"></div>
+      <div class="cc"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div class="cc-t" id="cal-lbl" style="margin-bottom:0"></div><div class="cal-nav"><button class="cal-nav-btn" onclick="calNav(-1)" aria-label="Mois précédent">‹</button><button class="cal-nav-btn" onclick="calToday()" title="Aujourd'hui" aria-label="Revenir au mois courant">•</button><button class="cal-nav-btn" onclick="calNav(1)" aria-label="Mois suivant">›</button></div></div><div class="cal-header" id="cal-hdr"></div><div class="cal-grid" id="cal-grid"></div><div class="cal-legend"><div class="cal-leg-item"><div class="cal-leg-sw" style="background:var(--acc2);border:2px solid var(--accent)"></div>Aujourd'hui</div><div class="cal-leg-item"><div class="cal-leg-sw" style="background:var(--warnbg)"></div>Prélèvement</div><div class="cal-leg-item"><div class="cal-leg-sw" style="background:#EDE9FE"></div>Fin d'essai</div></div></div>
+      <div style="margin-top:14px" id="cal-up"></div>
+    </div>
+    <!-- COACH IA -->
+    <div id="view-ai" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Intelligence artificielle</div><h1 class="tb-title">Coach IA</h1></div></div>
+      <div id="ai-lock" style="display:none"></div>
+      <div id="ai-content">
+      <div class="cc" style="margin-bottom:14px"><div class="cc-t">Questions rapides</div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="fbtn" onclick="aiQ('Où puis-je économiser ce mois-ci ?')">Où économiser ?</button><button class="fbtn" onclick="aiQ('Quels abonnements semblent inutiles ?')">Inutiles ?</button><button class="fbtn" onclick="aiQ('Résume mes dépenses')">Résumé</button><button class="fbtn" onclick="aiQ('Prévision 3 prochains mois')">Prévisions</button></div></div>
+      <div class="cc"><div class="ai-wrap"><div class="ai-msgs" id="ai-msgs"></div><div class="ai-input-row"><input class="ai-input" id="ai-in" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')sendAI()"/><button class="btn btn-dark btn-sm" onclick="sendAI()">Envoyer</button></div></div></div>
+      </div>
+    </div>
+    <!-- CSV -->
+    <div id="view-csv" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Automatisation</div><h1 class="tb-title">Import CSV bancaire</h1></div></div>
+      <div class="cc" style="margin-bottom:14px"><div class="cc-t">Banques compatibles</div><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="fbtn on" style="cursor:default">BNP Paribas</span><span class="fbtn on" style="cursor:default">Crédit Agricole</span><span class="fbtn on" style="cursor:default">Boursorama</span><span class="fbtn on" style="cursor:default">Société Générale</span><span class="fbtn on" style="cursor:default">Revolut</span><span class="fbtn on" style="cursor:default">LCL</span></div><div style="margin-top:10px;font-size:12px;color:var(--ink-3)">💡 Dans votre app bancaire → Relevés → Exporter en CSV</div></div>
+      <div class="cc"><div id="csv-dz" class="csv-drop" onclick="document.getElementById('csv-fi').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)"><div class="csv-drop-icon">📂</div><div class="csv-drop-t">Déposez votre fichier CSV ici</div><div class="csv-drop-s">ou cliquez pour sélectionner · .csv .txt</div></div><input type="file" id="csv-fi" accept=".csv,.txt" style="display:none" onchange="handleCSV(this.files[0])"/><div id="csv-res"></div></div>
+    </div>
+    <!-- PRO -->
+    <div id="view-pro" style="display:none">
+      <div class="topbar"><div><div class="tb-eye">Upgrade</div><h1 class="tb-title">Subtrak Pro</h1></div></div>
+      <div style="max-width:640px">
+        <div class="pro-feat-grid">
+          <div class="pro-feat"><div class="pro-feat-icon">∞</div><div><div class="pro-feat-t">Abonnements illimités</div><div class="pro-feat-s">Suivez tous vos abonnements sans restriction.</div></div></div>
+          <div class="pro-feat"><div class="pro-feat-icon">🤖</div><div><div class="pro-feat-t">Coach IA personnalisé</div><div class="pro-feat-s">Conseils, prévisions et résumés en langage naturel.</div></div></div>
+          <div class="pro-feat"><div class="pro-feat-icon">📧</div><div><div class="pro-feat-t">Alertes par email</div><div class="pro-feat-s">7 jours avant chaque renouvellement.</div></div></div>
+          <div class="pro-feat"><div class="pro-feat-icon">📬</div><div><div class="pro-feat-t">Connexion email</div><div class="pro-feat-s">Subtrak lit vos reçus et détecte vos abonnements automatiquement.</div></div></div>
+          <div class="pro-feat"><div class="pro-feat-icon">📄</div><div><div class="pro-feat-t">Export PDF mensuel</div><div class="pro-feat-s">Rapport complet chaque mois.</div></div></div>
+          <div class="pro-feat"><div class="pro-feat-icon">📈</div><div><div class="pro-feat-t">Analyse avancée</div><div class="pro-feat-s">Benchmark national, projections, coût du gaspillage, alternatives.</div></div></div>
+        </div>
+        <div class="pro-price-card">
+          <div class="pro-price-old">9,99 €/mois</div>
+          <div class="pro-price-val">7,99 €</div>
+          <div class="pro-price-per">par mois · résiliable à tout moment</div>
+          <button class="btn btn-white btn-full btn-lg" onclick="demoPay()">Commencer l'essai gratuit 7 jours</button>
+          <div style="font-size:11px;color:rgba(237,236,234,.3);margin-top:10px">Aucune carte requise · Annulation en 1 clic</div>
+        </div>
+        <div id="pro-demo-toggle"></div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+<!-- MODAL ADD/EDIT -->
+<div class="overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-t" id="mod-t">Nouvel abonnement</div><div class="modal-s">Renseignez les informations.</div>
+    <div class="mfld" id="mf-n"><label>Nom du service *</label><input type="text" id="f-name" placeholder="Netflix, Spotify…"/><div class="merr">Requis.</div></div>
+    <div class="frow"><div class="mfld" id="mf-p"><label>Montant (€) *</label><input type="number" id="f-price" placeholder="9.99" step="0.01" min="0.01"/><div class="merr">Invalide.</div></div><div class="mfld"><label>Fréquence</label><select id="f-freq"><option value="mensuel">Mensuel</option><option value="annuel">Annuel</option><option value="trimestriel">Trimestriel</option><option value="hebdomadaire">Hebdomadaire</option></select></div></div>
+    <div class="mfld"><label>Catégorie</label><select id="f-cat"><option value="Streaming">🎬 Streaming</option><option value="Musique">🎵 Musique</option><option value="Sport">🏋️ Sport</option><option value="Cloud">☁️ Cloud</option><option value="Logiciel">💻 Logiciel</option><option value="IA">🤖 IA</option><option value="Jeux">🎮 Jeux</option><option value="Presse">📰 Presse</option><option value="Autre">📦 Autre</option></select></div>
+    <div class="frow"><div class="mfld" id="mf-d"><label>Prochain renouvellement *</label><input type="date" id="f-date"/><div class="merr">Requis.</div></div><div class="mfld"><label>Fin période d'essai</label><input type="date" id="f-trial"/></div></div>
+    <div class="mfld"><label>Note personnelle</label><textarea id="f-note" placeholder="ex. Compte partagé, à résilier en décembre…"></textarea></div>
+    <div class="mfld"><label>Utilisez-vous encore cet abonnement ?</label><select id="f-used"><option value="oui">✅ Oui, régulièrement</option><option value="parfois">🟡 Parfois</option><option value="non">❌ Non, plus vraiment</option></select></div>
+    <div class="modal-ft"><button class="btn btn-ghost btn-sm" onclick="closeAdd()">Annuler</button><button class="btn btn-dark btn-sm" id="mod-btn" onclick="saveSub()">Ajouter</button></div>
+  </div>
+</div>
+<!-- MODAL CONFIRM -->
+<div class="overlay" id="modal-confirm">
+  <div class="modal" style="max-width:320px">
+    <div style="font-size:28px;text-align:center;margin-bottom:8px">🗑️</div>
+    <div class="modal-t" style="text-align:center">Supprimer ?</div>
+    <div style="text-align:center;font-size:13px;color:var(--ink-3);margin:7px 0 16px" id="confirm-name"></div>
+    <div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Annuler</button><button class="btn btn-sm" style="background:#B91C1C;color:#fff;border:none" onclick="confirmDelete()">Supprimer</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"><span id="ti"></span><span id="tm"></span></div>
+<script>
+var DEMO=[
+  {id:1,name:'Netflix',price:15.49,freq:'mensuel',cat:'Streaming',date:dn(3),trial:'',note:'',used:'oui'},
+  {id:2,name:'Spotify',price:9.99,freq:'mensuel',cat:'Musique',date:dn(18),trial:'',note:'Famille - 6 personnes',used:'oui'},
+  {id:4,name:'Salle de sport',price:29.90,freq:'mensuel',cat:'Sport',date:dn(22),trial:'',note:'A résilier ?',used:'non'},
+  {id:5,name:'Adobe CC',price:59.99,freq:'mensuel',cat:'Logiciel',date:dn(45),trial:'',note:'',used:'parfois'}
+];
+var subs=[],user={prenom:'Marie',nom:'D.'},editId=null,delId=null,alertF='all',subF='all',sortK='date',sortA=true,dark=false,aiHist=[],isPro=false;
+function dn(n){var d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
+function load(){try{var s=localStorage.getItem('stk_s');var u=localStorage.getItem('stk_u');var t=localStorage.getItem('stk_th');subs=s?JSON.parse(s):DEMO.slice();user=u?JSON.parse(u):{prenom:'Marie',nom:'D.'};isPro=(localStorage.getItem('stk_pro')==='1');if(t==='dark'){dark=true;document.documentElement.setAttribute('data-theme','dark');uTheme();}}catch(e){subs=DEMO.slice();}}
+function sv(){try{localStorage.setItem('stk_s',JSON.stringify(subs));localStorage.setItem('stk_u',JSON.stringify(user));}catch(e){}}
+function du(ds){var t=new Date();t.setHours(0,0,0,0);var d=new Date(ds);d.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+function fd(ds){if(!ds)return'—';try{return new Date(ds).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}catch(e){return ds;}}
+function ma(p,f){var m={mensuel:1,annuel:1/12,trimestriel:1/3,hebdomadaire:4.33};return p*(m[f]||1);}
+function fe(n){return n.toFixed(2).replace('.',',')+'\u00a0\u20ac';}
+function feH(n){return n.toFixed(2).replace('.',',')+'&nbsp;&euro;';}
+function gs(s){if(s.trial){var td=du(s.trial);if(td>=0&&td<=7)return{cls:'s-trial',txt:'Essai: '+td+'j'};}var d=du(s.date);if(d<0)return{cls:'s-red',txt:'Expiré'};if(d<=7)return{cls:'s-warn',txt:'Dans '+d+'j'};return{cls:'s-ok',txt:'Actif'};}
+function ci(c){var m={Streaming:'🎬',Musique:'🎵',Sport:'🏋️',Cloud:'☁️',Logiciel:'💻',IA:'🤖',Jeux:'🎮',Presse:'📰',Autre:'📦'};return m[c]||'📦';}
+function cap(s){return s?(s[0].toUpperCase()+s.slice(1)):'';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nid(){return subs.length?Math.max.apply(null,subs.map(function(s){return s.id;}))+1:1;}
+function lurl(name){var m={netflix:'netflix.com',spotify:'spotify.com','icloud+':'apple.com',apple:'apple.com',adobe:'adobe.com','adobe cc':'adobe.com',amazon:'amazon.com','prime video':'amazon.com',youtube:'youtube.com',disney:'disneyplus.com',deezer:'deezer.com',twitch:'twitch.tv',linkedin:'linkedin.com',notion:'notion.so',figma:'figma.com',github:'github.com','google one':'google.com',dropbox:'dropbox.com',canva:'canva.com',slack:'slack.com',microsoft:'microsoft.com','microsoft 365':'microsoft.com'};var k=name.toLowerCase().trim();var d=m[k];if(!d){for(var key in m){if(k.indexOf(key)!==-1){d=m[key];break;}}}return d?'https://logo.clearbit.com/'+d:null;}
+function lhtml(name){var url=lurl(name);if(url)return'<img class="sub-logo" src="'+url+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'" /><div class="sub-logo-ph" style="display:none">'+esc((name||'?')[0].toUpperCase())+'</div>';return'<div class="sub-logo-ph">'+esc((name||'?')[0].toUpperCase())+'</div>';}
+// Base d'alternatives moins chères
+var ALTS={
+  netflix:{alt:'le forfait Standard avec pub',price:5.99,tip:'Netflix propose une formule avec publicités bien moins chère.'},
+  spotify:{alt:'Spotify Duo ou le forfait Famille',price:7.50,tip:'Si vous partagez, le forfait Famille revient à ~3 €/personne.'},
+  'adobe cc':{alt:'Affinity (achat unique) ou Canva Pro',price:13,tip:'Affinity remplace Photoshop/Illustrator sans abonnement. Canva Pro coûte 13 €/mois.'},
+  adobe:{alt:'Affinity (achat unique) ou Canva Pro',price:13,tip:'Affinity remplace Photoshop/Illustrator pour un achat unique.'},
+  'salle de sport':{alt:'Basic-Fit ou une app de fitness',price:19.99,tip:'Basic-Fit démarre à ~20 €/mois. Une app comme Nike Training est gratuite.'},
+  disney:{alt:'le forfait Standard avec pub',price:5.99,tip:'Disney+ propose une formule avec pub à 5,99 €.'},
+  'amazon prime':{alt:'Prime Video seul',price:6.99,tip:'Si vous ne commandez pas souvent, Prime Video seul suffit.'},
+  'prime video':{alt:'un abonnement mensuel plutôt qu\'annuel selon l\'usage',price:6.99,tip:'Vérifiez si l\'offre annuelle est rentable pour vous.'},
+  'microsoft 365':{alt:'LibreOffice (gratuit) ou Google Workspace',price:0,tip:'LibreOffice est gratuit. Google Docs aussi pour un usage léger.'},
+  office:{alt:'LibreOffice (gratuit)',price:0,tip:'LibreOffice couvre la plupart des besoins bureautiques gratuitement.'},
+  'icloud+':{alt:'Google One ou stockage local',price:1.99,tip:'Google One démarre à 1,99 €/mois pour 100 Go.'},
+  dropbox:{alt:'Google Drive ou pCloud',price:0,tip:'Google Drive offre 15 Go gratuits. pCloud propose un achat à vie.'},
+  youtube:{alt:'YouTube avec un bloqueur de pub',price:0,tip:'Un navigateur avec bloqueur de pub rend Premium moins indispensable.'},
+  deezer:{alt:'Spotify Free ou YouTube Music',price:0,tip:'Les versions gratuites couvrent l\'écoute occasionnelle.'},
+  canva:{alt:'la version gratuite ou Photopea',price:0,tip:'Canva gratuit suffit souvent. Photopea est un Photoshop gratuit en ligne.'}
+};
+function findAlt(name){var k=name.toLowerCase().trim();if(ALTS[k])return ALTS[k];for(var key in ALTS){if(k.indexOf(key)!==-1)return ALTS[key];}return null;}
+function toggleTheme(){dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('stk_th',dark?'dark':'light');}catch(e){}uTheme();}
+function openMobileMore(){var s=document.getElementById('mob-sheet');if(s)s.classList.add('on');}
+function closeMobileMore(){var s=document.getElementById('mob-sheet');if(s)s.classList.remove('on');}
+function uTheme(){var ic=dark?'☀️':'🌙';['theme-btn','app-tb','mob-sheet-theme'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=ic;});var si=document.getElementById('sb-ti');if(si)si.textContent=ic;}
+function nav(p){document.querySelectorAll('.pg').forEach(function(x){x.classList.remove('on');});var pg=document.getElementById(p);if(pg)pg.classList.add('on');window.scrollTo(0,0);if(p==='pg-dashboard')rAll();}
+function appPage(v,se,mi){['dash','subs','alerts','stats','cal','ai','csv','pro'].forEach(function(x){var el=document.getElementById('view-'+x);if(el)el.style.display='none';});var t=document.getElementById('view-'+v);if(t)t.style.display='block';document.querySelectorAll('.sb-item').forEach(function(i){i.classList.remove('on');});if(se)se.classList.add('on');document.querySelectorAll('.mob-nav-item').forEach(function(i){i.classList.remove('on');});var mobMap={dash:'mni-dash',subs:'mni-subs',alerts:'mni-alerts',ai:'mni-ai'};var mobId=mi||mobMap[v]||'mni-more';var m=document.getElementById(mobId);if(m)m.classList.add('on');window.scrollTo(0,0);if(v==='dash')rDash();if(v==='subs')rSubs();if(v==='alerts')rAlerts();if(v==='stats')rStats();if(v==='cal')rCal();if(v==='ai')rAI();if(v==='pro')renderProPage();}
+function doLogin(){var e=document.getElementById('le').value.trim();var p=document.getElementById('lp').value;var ok=true;var ef=document.getElementById('le-f');var pf=document.getElementById('lp-f');ef.classList.remove('err');pf.classList.remove('err');if(!e||e.indexOf('@')===-1){ef.classList.add('err');ok=false;}if(!p){pf.classList.add('err');ok=false;}if(!ok)return;var parts=e.split('@')[0].split('.');user={prenom:cap(parts[0]),nom:parts[1]?cap(parts[1][0])+'.':'U.'};sv();nav('pg-dashboard');toast('ok','Connexion réussie !');}
+function doRegister(){var p=document.getElementById('rp').value.trim();var n=document.getElementById('rn').value.trim();var e=document.getElementById('re').value.trim();var pw=document.getElementById('rpw').value;var ok=true;var ef=document.getElementById('re-f');var pf=document.getElementById('rpw-f');ef.classList.remove('err');pf.classList.remove('err');if(!e||e.indexOf('@')===-1){ef.classList.add('err');ok=false;}if(pw.length<8){pf.classList.add('err');ok=false;}if(!ok)return;user={prenom:p||'Utilisateur',nom:n?n[0].toUpperCase()+'.':'U.'};subs=[];sv();nav('pg-dashboard');toast('ok','Bienvenue, '+user.prenom+' !');}
+function doLogout(){nav('pg-landing');toast('','Déconnecté(e).');}
+function rAll(){updatePlanLabel();var av=document.getElementById('sb-av');var un=document.getElementById('sb-uname');if(av)av.textContent=(user.prenom||'U')[0].toUpperCase();if(un)un.textContent=user.prenom+' '+user.nom;var urg=subs.filter(function(s){var d=du(s.date);return d>=0&&d<=7;});var b=document.getElementById('alert-bdg');var mb=document.getElementById('mob-bdg');if(b){b.textContent=urg.length;b.style.display=urg.length?'inline-block':'none';}if(mb){mb.textContent=urg.length;mb.style.display=urg.length?'inline-block':'none';}var h=new Date().getHours();var g=h<12?'Bonjour':(h<18?'Bon après-midi':'Bonsoir');var ge=document.getElementById('dash-gr');if(ge)ge.textContent=g+', '+user.prenom+' !';rDash();}
+function calcScore(){if(!subs.length)return{score:100,label:'Parfait',cls:'score-good',desc:'Aucun abonnement enregistré.'};var tot=subs.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var un=subs.filter(function(s){return s.used==='non';}).length;var sc=100;if(tot>100)sc-=20;if(tot>150)sc-=15;if(tot>200)sc-=15;sc-=un*15;if(subs.length>8)sc-=10;sc=Math.max(0,Math.min(100,sc));var lbl=sc>=80?'Excellent':sc>=60?'Correct':sc>=40?'À surveiller':'À optimiser';var cls=sc>=80?'score-good':sc>=50?'score-med':'score-bad';var desc=sc>=80?'Vos abonnements sont bien maîtrisés.':sc>=60?'Quelques optimisations possibles.':un>0?un+' abonnement(s) peu utilisé(s) détecté(s). Le coach IA peut vous aider.':'Dépenses élevées. Consultez le coach IA.';return{score:sc,label:lbl,cls:cls,desc:desc};}
+function rDash(){var tot=subs.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var urg=subs.filter(function(s){var d=du(s.date);return d>=0&&d<=7;});var dt=document.getElementById('d-tot');var da=document.getElementById('d-ann');var dc=document.getElementById('d-cnt');var dr=document.getElementById('d-ren');if(dt)dt.innerHTML=feH(tot);if(da)da.textContent=Math.round(tot*12)+' € /an';if(dc)dc.textContent=subs.length;if(dr)dr.textContent=urg.length;var sc=calcScore();var scEl=document.getElementById('score-card');if(scEl)scEl.innerHTML='<div class="score-circle '+sc.cls+'"><div class="score-num">'+sc.score+'</div><div class="score-lbl">/ 100</div></div><div class="score-info"><div class="score-title">Score : '+sc.label+'</div><div class="score-desc">'+sc.desc+'</div></div>';var un=subs.filter(function(s){return s.used==='non';});var scard=document.getElementById('sav-card');var sval=document.getElementById('sav-val');if(un.length>0){var savAmt=un.reduce(function(a,s){return a+ma(s.price,s.freq);},0);if(sval)sval.textContent=fe(savAmt*12)+' /an potentiels';if(scard)scard.style.display='flex';}else{if(scard)scard.style.display='none';}var ab=document.getElementById('abar');var at=document.getElementById('abar-txt');if(urg.length>0){if(at)at.innerHTML='<strong>'+urg.length+' renouvellement'+(urg.length>1?'s':'')+' dans 7 jours</strong> : '+esc(urg.map(function(s){return s.name;}).join(', '));if(ab)ab.classList.add('on');}else{if(ab)ab.classList.remove('on');}var tb=document.getElementById('dash-tbl');if(!tb)return;var sorted=subs.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,5);if(!sorted.length){tb.innerHTML='<tr><td colspan="4"><div class="tbl-empty"><div class="tbl-empty-icon">📋</div><div class="tbl-empty-t">Aucun abonnement</div><div class="tbl-empty-s">Ajoutez votre premier abonnement.</div></div></td></tr>';return;}var html='';sorted.forEach(function(s){var d=du(s.date);var st=gs(s);html+='<tr><td><div class="td-name">'+lhtml(s.name)+esc(s.name)+'</div></td><td><span class="price-m">'+feH(s.price)+'</span></td><td style="'+(d>=0&&d<=7?'color:var(--warn);font-weight:600':'color:var(--ink-2)')+'">'+fd(s.date)+'</td><td><span class="st-bdg '+st.cls+'"><span class="sdot"></span>'+st.txt+'</span></td></tr>';});tb.innerHTML=html;}
+function rSubs(){var cats=['all'];subs.forEach(function(s){if(cats.indexOf(s.cat)===-1)cats.push(s.cat);});var fr=document.getElementById('sub-filters');if(fr){fr.innerHTML=cats.map(function(c){return'<button class="fbtn'+(subF===c?' on':'')+'" data-cat="'+c+'">'+(c==='all'?'Tous ('+subs.length+')':ci(c)+' '+c)+'</button>';}).join('');fr.querySelectorAll('.fbtn').forEach(function(b){b.addEventListener('click',function(){subF=this.getAttribute('data-cat');rSubs();});});}var list=subs.filter(function(s){return subF==='all'||s.cat===subF;});list.sort(function(a,b){var va,vb;if(sortK==='price'){va=ma(a.price,a.freq);vb=ma(b.price,b.freq);}else if(sortK==='date'){va=new Date(a.date);vb=new Date(b.date);}else{va=a.name.toLowerCase();vb=b.name.toLowerCase();}return sortA?(va>vb?1:-1):(va<vb?1:-1);});var tb=document.getElementById('subs-tbl');if(!tb)return;if(!list.length){tb.innerHTML='<tr><td colspan="6"><div class="tbl-empty"><div class="tbl-empty-icon">🔍</div><div class="tbl-empty-t">Aucun résultat</div></div></td></tr>';}else{tb.innerHTML=list.map(function(s){var d=du(s.date);var st=gs(s);var ub=s.used==='non'?'<span class="st-bdg s-red" style="font-size:10px;margin-left:3px">peu utilisé</span>':'';return'<tr><td><div class="td-name">'+lhtml(s.name)+esc(s.name)+ub+'</div>'+(s.note?'<div style="font-size:11px;color:var(--ink-3);margin-top:1px;padding-left:28px">📝 '+esc(s.note)+'</div>':'')+'</td><td><span class="price-m">'+feH(s.price)+'</span><div class="freq-t">'+cap(s.freq)+'</div></td><td><span class="cat-bdg">'+ci(s.cat)+' '+esc(s.cat)+'</span></td><td style="'+(d>=0&&d<=7?'color:var(--warn);font-weight:600':'color:var(--ink-2)')+'">'+fd(s.date)+(s.trial?'<div style="font-size:10px;color:#7C3AED">Essai: '+fd(s.trial)+'</div>':'')+'</td><td><span class="st-bdg '+st.cls+'"><span class="sdot"></span>'+st.txt+'</span></td><td><button class="row-act" onclick="openEdit('+s.id+')">Modifier</button><button class="row-act row-del" onclick="askDel('+s.id+')">Suppr.</button></td></tr>';}).join('');}var lm=document.getElementById('limit-msg');if(lm)lm.innerHTML=(!isPro&&subs.length>=5)?'<div class="limit-banner">⚠️ <span>Limite de 5 abonnements atteinte (plan gratuit). <a onclick="appPage(\'pro\',document.getElementById(\'sbi-pro\'))">Passer à Pro</a> pour un nombre illimité.</span></div>':'';}
+function sortBy(k){if(sortK===k)sortA=!sortA;else{sortK=k;sortA=true;}rSubs();}
+function rAlerts(){var list=subs.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});if(alertF==='urgent')list=list.filter(function(s){var d=du(s.date);return d>=0&&d<=7;});if(alertF==='month')list=list.filter(function(s){var d=du(s.date);return d>=0&&d<=30;});if(alertF==='trial')list=list.filter(function(s){return s.trial&&du(s.trial)>=0;});var c=document.getElementById('alerts-list');if(!c)return;if(!list.length){c.innerHTML='<div class="al-empty"><div style="font-size:26px;margin-bottom:7px">✅</div><div style="font-weight:700;color:var(--ink);margin-bottom:3px">Aucune alerte</div><div style="font-size:12px;color:var(--ink-3)">Aucun renouvellement dans cette période.</div></div>';return;}c.innerHTML=list.map(function(s){var d=du(s.date);var urg=d>=0&&d<=7;var st=gs(s);var ic=d<0?'🔴':urg?'🟠':'🟢';return'<div class="al-item '+(urg?'urgent':'aok')+'"><div class="al-icon">'+ic+'</div><div><div class="al-name">'+esc(s.name)+'</div><div class="al-meta">'+feH(s.price)+'/'+s.freq+' · '+fd(s.date)+(s.trial?' · Essai: '+fd(s.trial):'')+'</div></div><div class="al-bdg-wrap"><span class="st-bdg '+st.cls+'"><span class="sdot"></span>'+st.txt+'</span></div></div>';}).join('');}
+function fAlert(f,el){alertF=f;document.querySelectorAll('#view-alerts .fbtn').forEach(function(b){b.classList.remove('on');});if(el)el.classList.add('on');rAlerts();}
+function rStats(){var tot=subs.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var avg=subs.length?tot/subs.length:0;var sm=document.getElementById('st-m');var sa=document.getElementById('st-a');var sav=document.getElementById('st-avg');if(sm)sm.innerHTML=feH(tot);if(sa)sa.innerHTML=feH(tot*12);if(sav)sav.innerHTML=feH(avg);var bycat={};subs.forEach(function(s){bycat[s.cat]=(bycat[s.cat]||0)+ma(s.price,s.freq);});var cats=Object.keys(bycat).sort(function(a,b){return bycat[b]-bycat[a];});var maxv=cats.length?bycat[cats[0]]:1;var bars=document.getElementById('cat-bars');if(bars)bars.innerHTML=cats.length?cats.map(function(c,i){var p=Math.round(bycat[c]/maxv*100);return'<div class="bar-row"><span class="bar-lbl">'+ci(c)+' '+esc(c)+'</span><div class="bar-track"><div class="bar-fill'+(i===0?' w':'')+'" style="width:'+p+'%"></div></div><span class="bar-val">'+feH(bycat[c])+'</span></div>';}).join(''):'<div style="color:var(--ink-3);font-size:13px;padding:16px 0;text-align:center">Aucune donnee</div>';var byfreq={};subs.forEach(function(s){byfreq[s.freq]=(byfreq[s.freq]||0)+1;});var fc={mensuel:'#2351F5',annuel:'#0A7A50',trimestriel:'#D4570A',hebdomadaire:'#7C3AED'};var tots=subs.length||1;var fes=Object.keys(byfreq);var circ='';var legs='';var off=25;fes.forEach(function(fr){var n=byfreq[fr];var pct=n/tots*100;var col=fc[fr]||'#888';circ+='<circle cx="18" cy="18" r="15.9" fill="none" stroke="'+col+'" stroke-width="3.8" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-dashoffset="'+(-off+25)+'" transform="rotate(-90 18 18)"/>';legs+='<div class="dl-item"><div class="dl-dot" style="background:'+col+'"></div>'+cap(fr)+' \u00b7 '+n+'</div>';off+=pct;});var dw=document.getElementById('freq-donut');if(dw)dw.innerHTML='<svg width="80" height="80" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3.8"/>'+circ+'</svg><div class="dl-legend">'+legs+'</div>';var ic=document.getElementById('insight-card');if(ic){if(cats.length&&tot>0){var tp=Math.round(bycat[cats[0]]/tot*100);ic.innerHTML='<div class="insight"><div class="ins-icon">💡</div><div><div class="ins-t">Conseil Subtrak</div><div class="ins-b">Votre categorie <strong>'+esc(cats[0])+'</strong> represente <strong>'+tp+'%</strong> de vos depenses ('+feH(bycat[cats[0]])+'/mois). '+(tp>40?'Verifiez si tous ces abonnements vous sont utiles.':'Budget bien reparti !')+'</div></div></div>';}else{ic.innerHTML='<div class="insight"><div class="ins-icon">💡</div><div><div class="ins-t">Conseil Subtrak</div><div class="ins-b">Ajoutez vos abonnements pour voir vos statistiques personnalisees.</div></div></div>';}}var adv=document.getElementById('stats-advanced');if(adv){if(!subs.length){adv.innerHTML='';}else if(isPro){adv.innerHTML=advancedStatsHTML(tot);}else{adv.innerHTML=lockCard('Analyse avancee','Passez a Pro pour debloquer une analyse complete, calculee a partir de vos donnees.',['Comparaison a la moyenne francaise','Projection sur 12 mois et 3 ans','Decomposition de votre score de sante','Cout des abonnements peu utilises','Alternatives moins cheres detaillees']);}}}
+var calOffset=0;
+function calNav(d){calOffset+=d;rCal();}
+function calToday(){calOffset=0;rCal();}
+function rCal(){var base=new Date();base.setDate(1);base.setMonth(base.getMonth()+calOffset);var y=base.getFullYear();var m=base.getMonth();var realNow=new Date();var isCurMonth=(y===realNow.getFullYear()&&m===realNow.getMonth());
+// Summary
+var monthSubs=subs.filter(function(s){var d=new Date(s.date);return d.getFullYear()===y&&d.getMonth()===m;});
+var monthTotal=monthSubs.reduce(function(a,s){return a+s.price;},0);
+var trialEnds=subs.filter(function(s){if(!s.trial)return false;var d=new Date(s.trial);return d.getFullYear()===y&&d.getMonth()===m;});
+var cs=document.getElementById('cal-summary');
+if(cs)cs.innerHTML='<div class="cal-sum-item"><div class="cal-sum-val">'+monthSubs.length+'</div><div class="cal-sum-lbl">prélèvement(s) ce mois</div></div><div class="cal-sum-item"><div class="cal-sum-val">'+fe(monthTotal)+'</div><div class="cal-sum-lbl">total à débiter</div></div><div class="cal-sum-item"><div class="cal-sum-val" style="color:#7C3AED">'+trialEnds.length+'</div><div class="cal-sum-lbl">fin(s) d\'essai</div></div>';
+var cl=document.getElementById('cal-lbl');if(cl)cl.textContent=base.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
+var ch=document.getElementById('cal-hdr');if(ch)ch.innerHTML=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(function(d){return'<div class="cal-day-name">'+d+'</div>';}).join('');
+var first=new Date(y,m,1);var last=new Date(y,m+1,0);var sdow=(first.getDay()+6)%7;var days=[];for(var i=0;i<sdow;i++)days.push(null);for(var i=1;i<=last.getDate();i++)days.push(i);
+var subMap={};subs.forEach(function(s){var d=new Date(s.date);if(d.getFullYear()===y&&d.getMonth()===m){var day=d.getDate();if(!subMap[day])subMap[day]=[];subMap[day].push({type:'sub',item:s});}if(s.trial){var t=new Date(s.trial);if(t.getFullYear()===y&&t.getMonth()===m){var td=t.getDate();if(!subMap[td])subMap[td]=[];subMap[td].push({type:'trial',item:s});}}});
+var tod=realNow.getDate();
+var cg=document.getElementById('cal-grid');
+if(cg){cg.innerHTML=days.map(function(d){if(!d)return'<div class="cal-day empty"></div>';var entries=subMap[d]||[];var it=isCurMonth&&d===tod;var cls='cal-day'+(it?' today':'')+(entries.length?' has-sub':'');var inner='<div class="cal-day-num">'+d+'</div>';entries.slice(0,2).forEach(function(e){if(e.type==='trial'){inner+='<div class="cal-sub-pill s-trial-p" title="Fin essai: '+esc(e.item.name)+'">⏳ '+esc(e.item.name)+'</div>';}else{inner+='<div class="cal-sub-pill" title="'+esc(e.item.name)+' - '+fe(e.item.price)+'">'+esc(e.item.name)+'</div>';}});if(entries.length>2)inner+='<div class="cal-sub-more">+'+(entries.length-2)+' autre(s)</div>';return'<div class="'+cls+'" '+(entries.length?'onclick="showCD('+d+','+y+','+m+')"':'')+'>'+inner+'</div>';}).join('');}
+var up=subs.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);}).filter(function(s){var d=du(s.date);return d>=0&&d<=30;});
+var uc=document.getElementById('cal-up');
+if(uc){uc.innerHTML=up.length?'<div class="cc"><div class="cc-t">Prochains prélèvements (30 jours)</div><div class="al-list">'+up.map(function(s){var d=du(s.date);var st=gs(s);return'<div class="al-item '+(d<=7?'urgent':'aok')+'"><div class="al-icon">'+(d<=7?'🟠':'🟢')+'</div><div><div class="al-name">'+esc(s.name)+'</div><div class="al-meta">'+feH(s.price)+' · '+(d===0?'aujourd\'hui':d===1?'demain':'dans '+d+' jours')+' · '+fd(s.date)+'</div></div><span class="st-bdg '+st.cls+'"><span class="sdot"></span>'+st.txt+'</span></div>';}).join('')+'</div></div>':'<div class="cc"><div style="text-align:center;color:var(--ink-3);padding:16px;font-size:13px">✅ Aucun prélèvement dans les 30 prochains jours</div></div>';}}
+function showCD(d,y,m){var s=[];subs.forEach(function(sub){var dd=new Date(sub.date);if(dd.getDate()===d&&(y===undefined||dd.getFullYear()===y)&&(m===undefined||dd.getMonth()===m))s.push(sub);});if(s.length){var total=s.reduce(function(a,x){return a+x.price;},0);toast('ok',s.map(function(x){return x.name;}).join(', ')+' = '+fe(total));}}
+function initAI(){var msgs=document.getElementById('ai-msgs');if(msgs&&msgs.children.length===0)addMsg('bot','Bonjour ! Je suis votre Coach IA Subtrak. Je connais tous vos abonnements et je suis là pour vous aider à optimiser vos dépenses. Posez-moi vos questions !');}
+function aiLocalAnswer(q){
+  // Réponse intelligente locale basée sur la question et les vraies données
+  var ql=q.toLowerCase();
+  var tot=subs.reduce(function(a,s){return a+ma(s.price,s.freq);},0);
+  var un=subs.filter(function(s){return s.used==='non';});
+  var partial=subs.filter(function(s){return s.used==='parfois';});
+  var sorted=subs.slice().sort(function(a,b){return ma(b.price,b.freq)-ma(a.price,a.freq);});
+  // Détecter l'intention
+  if(/économ|economi|réduire|reduire|dépenser moins|depenser moins|moins cher|alternativ/.test(ql)){
+    var rep='💰 <strong>Voici où vous pouvez économiser, '+esc(user.prenom)+' :</strong><br><br>';
+    var alts=[];subs.forEach(function(s){var a=findAlt(s.name);if(a){var saved=ma(s.price,s.freq)-a.price;if(saved>0.5)alts.push({name:s.name,alt:a.alt,saved:saved,tip:a.tip});}});
+    alts.sort(function(a,b){return b.saved-a.saved;});
+    if(alts.length){alts.slice(0,3).forEach(function(x){rep+='• <strong>'+esc(x.name)+'</strong> → '+esc(x.alt)+' (<span style="color:#0A7A50">-'+fe(x.saved)+'/mois</span>)<br>';});var ts=alts.reduce(function(a,x){return a+x.saved;},0);rep+='<br>Potentiel total : <strong>'+fe(ts*12)+'/an</strong> ! 🎉';}
+    else if(un.length){var sa=un.reduce(function(a,s){return a+ma(s.price,s.freq);},0);rep+='Vous avez <strong>'+un.length+' abonnement(s) peu utilisé(s)</strong> : '+un.map(function(s){return s.name;}).join(', ')+'.<br>En les résiliant : <strong>'+fe(sa*12)+'/an</strong> économisés.';}
+    else{rep+='Vos abonnements semblent bien optimisés ! Le plus coûteux reste '+(sorted[0]?'<strong>'+esc(sorted[0].name)+'</strong> ('+fe(ma(sorted[0].price,sorted[0].freq))+'/mois)':'—')+'.';}
+    return rep;
+  }
+  if(/inutile|pas utili|peu utili|résili|resili|supprimer|garder/.test(ql)){
+    if(un.length){var sa2=un.reduce(function(a,s){return a+ma(s.price,s.freq);},0);return '🔍 <strong>Abonnements à reconsidérer :</strong><br><br>'+un.map(function(s){return '• <strong>'+esc(s.name)+'</strong> ('+fe(ma(s.price,s.freq))+'/mois) — marqué comme peu utilisé'+(s.note?' · '+esc(s.note):'');}).join('<br>')+'<br><br>'+(partial.length?'À surveiller aussi : '+partial.map(function(s){return s.name;}).join(', ')+'.<br><br>':'')+'Résilier ces '+un.length+' abonnement(s) vous ferait économiser <strong>'+fe(sa2*12)+'/an</strong>.';}
+    return '✅ Bonne nouvelle ! Aucun de vos abonnements n\'est marqué comme inutilisé. '+(partial.length?'Surveillez tout de même : '+partial.map(function(s){return s.name;}).join(', ')+'.':'Continuez comme ça !');
+  }
+  if(/résum|resum|bilan|récap|recap|combien|total|dépense|depense/.test(ql)){
+    var byc={};subs.forEach(function(s){byc[s.cat]=(byc[s.cat]||0)+ma(s.price,s.freq);});
+    var topCat=Object.keys(byc).sort(function(a,b){return byc[b]-byc[a];})[0];
+    return '📊 <strong>Votre bilan, '+esc(user.prenom)+' :</strong><br><br>• Total : <strong>'+fe(tot)+'/mois</strong> ('+fe(tot*12)+'/an)<br>• Nombre d\'abonnements : <strong>'+subs.length+'</strong><br>• Coût moyen : <strong>'+fe(subs.length?tot/subs.length:0)+'</strong>/abonnement<br>• Catégorie principale : <strong>'+(topCat?esc(topCat):'—')+'</strong>'+(sorted[0]?'<br>• Le plus cher : <strong>'+esc(sorted[0].name)+'</strong> ('+fe(ma(sorted[0].price,sorted[0].freq))+'/mois)':'')+(un.length?'<br><br>⚠️ '+un.length+' abonnement(s) peu utilisé(s) à reconsidérer.':'');
+  }
+  if(/prévis|previs|futur|prochains? mois|prédi|predi|projet/.test(ql)){
+    return '🔮 <strong>Prévisions, '+esc(user.prenom)+' :</strong><br><br>Au rythme actuel de <strong>'+fe(tot)+'/mois</strong> :<br>• Dans 3 mois : <strong>'+fe(tot*3)+'</strong><br>• Dans 6 mois : <strong>'+fe(tot*6)+'</strong><br>• Sur 1 an : <strong>'+fe(tot*12)+'</strong><br><br>'+(un.length?'En résiliant vos abonnements peu utilisés, vous économiseriez <strong>'+fe(un.reduce(function(a,s){return a+ma(s.price,s.freq);},0)*12)+'</strong> sur l\'année.':'Vos dépenses sont stables et maîtrisées.');
+  }
+  if(/plus cher|coûteux|couteux|gros|important/.test(ql)){
+    if(sorted[0])return '💸 Votre abonnement le plus coûteux est <strong>'+esc(sorted[0].name)+'</strong> à <strong>'+fe(ma(sorted[0].price,sorted[0].freq))+'/mois</strong> ('+fe(ma(sorted[0].price,sorted[0].freq)*12)+'/an).'+(findAlt(sorted[0].name)?' 💡 Alternative possible : '+esc(findAlt(sorted[0].name).alt)+'.':'');
+    return 'Vous n\'avez pas encore d\'abonnement enregistré.';
+  }
+  // Réponse générale par défaut
+  var sc=calcScore();
+  return 'Bonne question ! Voici ce que je vois, '+esc(user.prenom)+' :<br><br>Vous dépensez <strong>'+fe(tot)+'/mois</strong> avec un score de santé de <strong>'+sc.score+'/100</strong>.'+(un.length?' '+un.length+' abonnement(s) mériteraient votre attention.':' Vos abonnements sont bien gérés.')+'<br><br>💡 Essayez de me demander : « Où puis-je économiser ? », « Quels abonnements sont inutiles ? » ou « Fais-moi un résumé ».';
+}
+function aiQ(q){var inp=document.getElementById('ai-in');if(inp)inp.value=q;sendAI();}
+function addMsg(role,text){var msgs=document.getElementById('ai-msgs');if(!msgs)return;var d=document.createElement('div');d.className='ai-msg '+role;var av=document.createElement('div');av.className='ai-av '+role;av.textContent=role==='bot'?'🤖':((user.prenom||'U')[0].toUpperCase());var b=document.createElement('div');b.className='ai-bubble';b.innerHTML=text.replace(/\n/g,'<br>');if(role==='bot'){d.appendChild(av);d.appendChild(b);}else{d.appendChild(b);d.appendChild(av);}msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
+function sendAI(){var inp=document.getElementById('ai-in');if(!inp)return;var q=inp.value.trim();if(!q)return;inp.value='';addMsg('user',q);var think=document.createElement('div');think.className='ai-msg bot';think.id='ai-th';var av2=document.createElement('div');av2.className='ai-av bot';av2.textContent='🤖';var b2=document.createElement('div');b2.className='ai-bubble';b2.innerHTML='<span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>';think.appendChild(av2);think.appendChild(b2);var msgs=document.getElementById('ai-msgs');if(msgs){msgs.appendChild(think);msgs.scrollTop=msgs.scrollHeight;}var answered=false;function finish(txt){if(answered)return;answered=true;var th=document.getElementById('ai-th');if(th)th.remove();addMsg('bot',txt);}var timer=setTimeout(function(){finish(aiLocalAnswer(q));},3500);var tot=subs.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var sc=calcScore();var ctx='Tu es le Coach IA de Subtrak, app francaise de gestion abonnements. Reponds en francais, de facon concise (3-5 phrases max) et bienveillante. Donne des conseils concrets et des alternatives moins cheres quand pertinent. Utilise quelques emojis.\n\nUtilisateur: '+user.prenom+'\nTotal mensuel: '+fe(tot)+' ('+fe(tot*12)+'/an)\nScore: '+sc.score+'/100\nAbonnements:\n'+subs.map(function(s){return'- '+s.name+' ('+s.cat+'): '+fe(ma(s.price,s.freq))+'/mois, '+s.freq+(s.used==='non'?' [PEU UTILISE]':s.used==='parfois'?' [PARTIEL]':'')+(s.note?' ['+s.note+']':'');}).join('\n');fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:ctx+'\n\nQuestion: '+q}]})}).then(function(r){return r.json();}).then(function(data){clearTimeout(timer);var txt='';if(data&&data.content)data.content.forEach(function(c){if(c.type==='text')txt+=c.text;});if(txt){finish(txt.replace(/\n/g,'<br>'));}else{finish(aiLocalAnswer(q));}}).catch(function(){clearTimeout(timer);finish(aiLocalAnswer(q));});}
+function handleDrop(e){e.preventDefault();var dz=document.getElementById('csv-dz');if(dz)dz.classList.remove('drag');var f=e.dataTransfer.files[0];if(f)handleCSV(f);}
+function handleCSV(file){if(!file)return;var r=new FileReader();r.onload=function(e){parseCSV(e.target.result);};r.onerror=function(){csvErr('Erreur de lecture du fichier.');};r.readAsText(file,'UTF-8');}
+function parseCSV(text){var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});if(lines.length<2){csvErr('Fichier vide ou invalide.');return;}var sep=text.split('\n')[0].indexOf(';')!==-1?';':',';var headers=lines[0].split(sep).map(function(h){return h.replace(/"/g,'').trim().toLowerCase();});var labelIdx=-1;var amtIdx=-1;headers.forEach(function(h,i){if(/libelle|label|description|intitule|nom|wording/.test(h))labelIdx=i;if(/montant|amount|debit|credit|valeur/.test(h)&&amtIdx===-1)amtIdx=i;});if(labelIdx===-1){csvErr('Colonne "libellé" non trouvée. Essayez une autre banque ou vérifiez le format.');return;}var rec={};lines.slice(1).forEach(function(line){if(!line.trim())return;var cols=line.split(sep).map(function(c){return c.replace(/"/g,'').trim();});var label=cols[labelIdx]||'';var amt=amtIdx!==-1?parseFloat((cols[amtIdx]||'0').replace(',','.')):0;if(!label||isNaN(amt)||amt===0)return;var key=label.substring(0,30).toLowerCase().replace(/\s+/g,' ').trim();if(!rec[key])rec[key]={label:label,count:0,amt:Math.abs(amt)};rec[key].count++;});var found=Object.values(rec).filter(function(r){return r.count>=2;});if(!found.length){csvErr('Aucun prélèvement récurrent détecté. Importez plusieurs mois de transactions.');return;}csvResults(found);}
+function csvErr(msg){var r=document.getElementById('csv-res');if(r)r.innerHTML='<div style="background:var(--warnbg);border:1px solid #FBCAA7;border-radius:var(--r);padding:12px 16px;margin-top:14px;font-size:13px;color:var(--warn)">⚠️ '+esc(msg)+'</div>';}
+function csvResults(found){var r=document.getElementById('csv-res');if(!r)return;var html='<div style="margin-top:14px"><div class="cc-t" style="margin-bottom:10px">'+found.length+' prélèvement(s) récurrent(s) détecté(s)</div><div class="csv-results">';found.forEach(function(item,i){html+='<div class="csv-row"><input type="checkbox" class="csv-check" id="csv-'+i+'" checked/><span class="csv-rname">'+esc(item.label.substring(0,36))+'</span><span class="csv-rprice">~'+feH(item.amt)+'/mois</span></div>';});html+='</div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn btn-dark btn-sm" onclick="importSel('+JSON.stringify(found).replace(/"/g,"'")+')">Importer la sélection</button><button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'csv-res\').innerHTML=\'\'">Annuler</button></div></div>';r.innerHTML=html;}
+function importSel(found){var added=0;found.forEach(function(item,i){var cb=document.getElementById('csv-'+i);if(cb&&cb.checked&&(isPro||subs.length<5)){subs.push({id:nid(),name:item.label.substring(0,30),price:item.amt,freq:'mensuel',cat:'Autre',date:dn(30),trial:'',note:'Importé CSV',used:'oui'});added++;}});sv();document.getElementById('csv-res').innerHTML='';toast('ok',added+' abonnement(s) importé(s)');appPage('subs',document.getElementById('sbi-subs'));}
+function openAdd(){if(!isPro&&subs.length>=5){toast('warn','Limite de 5 abonnements (plan gratuit). Passez à Pro pour un nombre illimité.');appPage('pro',document.getElementById('sbi-pro'));return;}editId=null;var t=document.getElementById('mod-t');var b=document.getElementById('mod-btn');if(t)t.textContent='Nouvel abonnement';if(b)b.textContent='Ajouter';setFields({name:'',price:'',freq:'mensuel',cat:'Streaming',date:dn(30),trial:'',note:'',used:'oui'});['mf-n','mf-p','mf-d'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('has-err');});var mo=document.getElementById('modal-add');if(mo)mo.classList.add('on');setTimeout(function(){var n=document.getElementById('f-name');if(n)n.focus();},100);}
+function openEdit(id){var s=subs.find(function(x){return x.id===id;});if(!s)return;editId=id;var t=document.getElementById('mod-t');var b=document.getElementById('mod-btn');if(t)t.textContent='Modifier l\'abonnement';if(b)b.textContent='Enregistrer';setFields(s);var mo=document.getElementById('modal-add');if(mo)mo.classList.add('on');}
+function setFields(s){var f={name:s.name||'',price:s.price||'',freq:s.freq||'mensuel',cat:s.cat||'Streaming',date:s.date||dn(30),trial:s.trial||'',note:s.note||'',used:s.used||'oui'};Object.keys(f).forEach(function(k){var el=document.getElementById('f-'+k);if(el)el.value=f[k];});}
+function closeAdd(){var mo=document.getElementById('modal-add');if(mo)mo.classList.remove('on');editId=null;}
+function saveSub(){var name=(document.getElementById('f-name')||{}).value||'';name=name.trim();var price=parseFloat((document.getElementById('f-price')||{}).value||0);var freq=(document.getElementById('f-freq')||{}).value||'mensuel';var cat=(document.getElementById('f-cat')||{}).value||'Autre';var date=(document.getElementById('f-date')||{}).value||'';var trial=(document.getElementById('f-trial')||{}).value||'';var note=(document.getElementById('f-note')||{}).value||'';var used=(document.getElementById('f-used')||{}).value||'oui';var ok=true;var mn=document.getElementById('mf-n');var mp=document.getElementById('mf-p');var md=document.getElementById('mf-d');if(mn)mn.classList.toggle('has-err',!name);if(!name)ok=false;if(mp)mp.classList.toggle('has-err',!price||price<=0);if(!price||price<=0)ok=false;if(md)md.classList.toggle('has-err',!date);if(!date)ok=false;if(!ok)return;if(editId){var idx=subs.findIndex(function(s){return s.id===editId;});if(idx!==-1)subs[idx]={id:editId,name:name,price:price,freq:freq,cat:cat,date:date,trial:trial,note:note,used:used};toast('ok',name+' modifié');}else{subs.push({id:nid(),name:name,price:price,freq:freq,cat:cat,date:date,trial:trial,note:note,used:used});toast('ok',name+' ajouté');}sv();closeAdd();rAll();var cv=document.querySelector('[id^="view-"]:not([style*="none"])');if(cv){var v=cv.id.replace('view-','');if(v==='subs')rSubs();if(v==='alerts')rAlerts();if(v==='stats')rStats();}}
+function askDel(id){var s=subs.find(function(x){return x.id===id;});if(!s)return;delId=id;var cn=document.getElementById('confirm-name');if(cn)cn.textContent='"'+s.name+'" sera supprimé définitivement.';var mo=document.getElementById('modal-confirm');if(mo)mo.classList.add('on');}
+function closeConfirm(){var mo=document.getElementById('modal-confirm');if(mo)mo.classList.remove('on');delId=null;}
+function confirmDelete(){if(!delId)return;var name=(subs.find(function(s){return s.id===delId;})||{}).name||'';subs=subs.filter(function(s){return s.id!==delId;});sv();closeConfirm();rAll();var cv=document.querySelector('[id^="view-"]:not([style*="none"])');if(cv){var v=cv.id.replace('view-','');if(v==='subs')rSubs();if(v==='alerts')rAlerts();if(v==='stats')rStats();}toast('',name+' supprimé');}
+function toast(type,msg){var t=document.getElementById('toast');var i=document.getElementById('ti');var m=document.getElementById('tm');if(!t||!i||!m)return;i.textContent=type==='ok'?'✓':type==='warn'?'⚠':'→';m.textContent=msg;t.style.background=type==='ok'?'var(--ok)':type==='warn'?'var(--warn)':'var(--ink)';t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on');},3000);}
+function demoMsg(){toast('','Version démo — cette page sera disponible dans la version finale.');}
+function demoPay(){toast('','Démo — le paiement sera activé au lancement officiel. Merci de votre intérêt !');}
+function updatePlanLabel(){var el=document.getElementById('sb-uplan-lbl');if(el)el.textContent=isPro?'Plan Pro ✦':'Plan Gratuit';}
+function setPro(v){isPro=v;try{localStorage.setItem('stk_pro',v?'1':'0');}catch(e){}updatePlanLabel();var cv=document.querySelector('[id^="view-"]:not([style*="none"])');var vid=cv?cv.id.replace('view-',''):'dash';if(vid==='stats')rStats();else if(vid==='ai')rAI();else if(vid==='pro')renderProPage();else if(vid==='subs')rSubs();else rDash();}
+function renderProPage(){var t=document.getElementById('pro-demo-toggle');if(!t)return;if(isPro){t.innerHTML='<div style="background:var(--okbg);border:1px solid #A7DFC5;border-radius:var(--r);padding:12px 16px;margin-top:16px;font-size:13px;color:var(--ok);display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">✓ Aper\u00e7u Pro activ\u00e9 (d\u00e9mo). <a style="color:var(--ok);font-weight:700;text-decoration:underline;cursor:pointer" onclick="setPro(false);toast(\'\',\'Retour au plan Gratuit (d\u00e9mo)\')">Revenir au plan Gratuit</a></div>';}else{t.innerHTML='<div style="text-align:center;font-size:12px;color:var(--ink-3);margin-top:14px">Paiement pas encore branch\u00e9 — <a style="color:var(--accent);font-weight:600;text-decoration:underline;cursor:pointer" onclick="setPro(true);toast(\'ok\',\'Aper\u00e7u Pro activ\u00e9 (d\u00e9mo)\')">👁 Pr\u00e9visualiser l\'exp\u00e9rience Pro (d\u00e9mo)</a></div>';}}
+function lockCard(title,sub,feats){return '<div class="lock-card"><div class="lock-badge">✦ R\u00e9serv\u00e9 \u00e0 Pro</div><div class="lock-ic">🔒</div><div class="lock-t">'+esc(title)+'</div><div class="lock-s">'+sub+'</div><ul class="lock-list">'+feats.map(function(fe){return '<li>✦ '+esc(fe)+'</li>';}).join('')+'</ul><button class="btn btn-dark" onclick="appPage(\'pro\',document.getElementById(\'sbi-pro\'))">Passer \u00e0 Pro — 7,99 €/mois</button></div>';}
+function rAI(){var lock=document.getElementById('ai-lock');var content=document.getElementById('ai-content');if(isPro){if(lock)lock.style.display='none';if(content)content.style.display='block';initAI();}else{if(content)content.style.display='none';if(lock){lock.style.display='block';lock.innerHTML=lockCard('Coach IA personnalis\u00e9','Posez vos questions en fran\u00e7ais. Le coach analyse vos abonnements, rep\u00e8re les \u00e9conomies et vous conseille.',['Conseils personnalis\u00e9s en langage naturel','D\u00e9tection des abonnements \u00e0 r\u00e9silier','Pr\u00e9visions de d\u00e9penses','Alternatives moins ch\u00e8res']);}}}
+function advancedStatsHTML(tot){var BENCH=49;var diff=tot-BENCH;var pct=BENCH?Math.round(Math.abs(diff)/BENCH*100):0;var benchTxt=diff>0.5?'soit <strong>'+pct+'% de plus</strong> que la moyenne fran\u00e7aise ('+fe(BENCH)+'/mois).':diff<-0.5?'soit <strong>'+pct+'% de moins</strong> que la moyenne fran\u00e7aise ('+fe(BENCH)+'/mois). Bien jou\u00e9 !':'quasiment dans la moyenne fran\u00e7aise ('+fe(BENCH)+'/mois).';var un=subs.filter(function(s){return s.used==='non';});var partial=subs.filter(function(s){return s.used==='parfois';});var wasteM=un.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var partialM=partial.reduce(function(a,s){return a+ma(s.price,s.freq);},0);var sc=calcScore();var deducs=[];if(tot>100)deducs.push('-20 (d\u00e9penses > 100 €)');if(tot>150)deducs.push('-15 (d\u00e9penses > 150 €)');if(tot>200)deducs.push('-15 (d\u00e9penses > 200 €)');if(un.length)deducs.push('-'+(15*un.length)+' ('+un.length+' abonnement(s) peu utilis\u00e9(s))');var alts=[];subs.forEach(function(s){var a=findAlt(s.name);if(a){var saved=ma(s.price,s.freq)-a.price;if(saved>0.5)alts.push({name:s.name,alt:a.alt,tip:a.tip,saved:saved});}});alts.sort(function(a,b){return b.saved-a.saved;});var altTotal=alts.reduce(function(a,x){return a+x.saved;},0);var html='<div class="cc full" style="margin-bottom:14px"><div class="cc-t">✦ Analyse avanc\u00e9e — Pro</div>';html+='<div class="adv-row"><div class="adv-ic">🇫🇷</div><div><div class="adv-t">Comparaison nationale</div><div class="adv-b">Vous d\u00e9pensez <strong>'+fe(tot)+'/mois</strong>, '+benchTxt+'</div></div></div>';html+='<div class="adv-row"><div class="adv-ic">📈</div><div><div class="adv-t">Projection</div><div class="adv-b">\u00c0 ce rythme : <strong>'+fe(tot*12)+'</strong> sur 12 mois · <strong>'+fe(tot*36)+'</strong> sur 3 ans.'+(wasteM>0.5?' En r\u00e9siliant l\'inutilis\u00e9, vous garderiez <strong style="color:var(--ok)">'+fe(wasteM*12)+'</strong>/an.':'')+'</div></div></div>';if(wasteM>0.5||partialM>0.5){html+='<div class="adv-row"><div class="adv-ic">🕳️</div><div><div class="adv-t">Co\u00fbt du gaspillage</div><div class="adv-b">'+(wasteM>0.5?'<strong style="color:var(--warn)">'+fe(wasteM)+'/mois</strong> ('+fe(wasteM*12)+'/an) sur des abonnements marqu\u00e9s \u00ab plus vraiment utilis\u00e9s \u00bb.':'')+(partialM>0.5?' '+fe(partialM)+'/mois utilis\u00e9s \u00ab parfois \u00bb, \u00e0 surveiller.':'')+'</div></div></div>';}html+='<div class="adv-row"><div class="adv-ic">🎯</div><div><div class="adv-t">D\u00e9composition du score ('+sc.score+'/100)</div><div class="adv-b">Base 100'+(deducs.length?'. P\u00e9nalit\u00e9s : <span style="color:var(--warn)">'+deducs.join(', ')+'</span>.':' — aucune p\u00e9nalit\u00e9, excellent !')+'</div></div></div>';html+='</div>';if(alts.length){html+='<div class="cc full"><div class="cc-t">💰 Alternatives moins ch\u00e8res d\u00e9tect\u00e9es</div><div style="display:flex;flex-direction:column;gap:8px">';alts.slice(0,5).forEach(function(x){html+='<div style="background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:11px 14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-weight:600;font-size:13px;color:var(--ink)">'+esc(x.name)+' → '+esc(x.alt)+'</div><div style="font-family:\'JetBrains Mono\',monospace;font-size:12px;font-weight:600;color:var(--ok);white-space:nowrap">-'+fe(x.saved)+'/mois</div></div><div style="font-size:12px;color:var(--ink-3);margin-top:4px">'+esc(x.tip)+'</div></div>';});html+='</div><div style="margin-top:10px;font-size:13px;color:var(--ok);font-weight:600">\u00c9conomie totale possible : '+fe(altTotal)+'/mois ('+fe(altTotal*12)+'/an) 🎉</div></div>';}return html;}
+
+['modal-add','modal-confirm'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('click',function(e){if(e.target===this){if(id==='modal-add')closeAdd();else closeConfirm();}});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAdd();closeConfirm();closeMobileMore();}});
+document.addEventListener('DOMContentLoaded',function(){load();updatePlanLabel();var d=document.getElementById('f-date');if(d)d.value=dn(30);});
+</script>
+</body>
+</html>
