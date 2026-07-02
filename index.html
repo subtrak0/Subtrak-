@@ -68,7 +68,7 @@ body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);fon
 .tc-av{width:30px;height:30px;border-radius:50%;background:var(--acc2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
 .tc-name{font-size:13px;font-weight:600;color:var(--ink)}.tc-role{font-size:11px;color:var(--ink-3)}
 .lp-ft{padding:28px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.ft-copy{font-size:12px;color:var(--ink-3)}.ft-links{display:flex;gap:14px}.ft-link{font-size:12px;color:var(--ink-3);cursor:pointer}.ft-link:hover{color:var(--ink)}
+.ft-copy{font-size:12px;color:var(--ink-3)}.ft-links{display:flex;gap:14px}.ft-link{font-size:12px;color:var(--ink-3);cursor:pointer;text-decoration:none}.ft-link:hover{color:var(--ink)}
 .auth-wrap{min-height:100vh;display:flex;flex-direction:column}
 @media(min-width:680px){.auth-wrap{flex-direction:row}}
 .auth-left{background:var(--sb);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 28px;position:relative;overflow:hidden;min-height:200px}
@@ -350,7 +350,7 @@ tr:hover td{background:rgba(0,0,0,.02)}[data-theme="dark"] tr:hover td{backgroun
   <footer class="lp-ft">
     <div class="logo">Sub<span>trak</span></div>
     <div class="ft-copy">© 2026 Subtrak · Fait en France</div>
-    <div class="ft-links"><span class="ft-link" onclick="demoMsg()">CGU</span><span class="ft-link" onclick="demoMsg()">Confidentialité</span></div>
+    <div class="ft-links"><a class="ft-link" href="legal.html#mentions">Mentions légales</a><a class="ft-link" href="legal.html#cgu">CGU</a><a class="ft-link" href="legal.html#confidentialite">Confidentialité</a></div>
   </footer>
 </div>
 <!-- LOGIN -->
